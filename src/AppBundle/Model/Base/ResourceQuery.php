@@ -3,9 +3,9 @@
 namespace Model\Base;
 
 /**
- * Base class of query of Model\Article document.
+ * Base class of query of Model\Resource document.
  */
-abstract class ArticleQuery extends \Mandango\Query
+abstract class ResourceQuery extends \Mandango\Query
 {
     /**
      * {@inheritdoc}

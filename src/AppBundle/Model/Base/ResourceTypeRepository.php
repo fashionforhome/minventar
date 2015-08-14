@@ -3,18 +3,18 @@
 namespace Model\Base;
 
 /**
- * Base class of repository of Model\Article document.
+ * Base class of repository of Model\ResourceType document.
  */
-abstract class ArticleRepository extends \Mandango\Repository
+abstract class ResourceTypeRepository extends \Mandango\Repository
 {
     /**
      * {@inheritdoc}
      */
     public function __construct(\Mandango\Mandango $mandango)
     {
-        $this->documentClass = 'Model\Article';
+        $this->documentClass = 'Model\ResourceType';
         $this->isFile = false;
-        $this->collectionName = 'model_article';
+        $this->collectionName = 'resource_type';
 
         parent::__construct($mandango);
     }
@@ -72,6 +72,7 @@ abstract class ArticleRepository extends \Mandango\Repository
                 $document->clearModified();
                 $identityMap[(string) $data['_id']] = $document;
 
+                $document->resetGroups();
             }
         }
 
@@ -81,6 +82,7 @@ abstract class ArticleRepository extends \Mandango\Repository
                 $query = $document->queryForSave();
                 $collection->update(array('_id' => $this->idToMongo($document->getId())), $query, $updateOptions);
                 $document->clearModified();
+                $document->resetGroups();
             }
         }
     }

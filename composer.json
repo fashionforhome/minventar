@@ -6,7 +6,7 @@
   "autoload": {
     "psr-4": {
       "": "src/",
-      "Model\\Mapping\\" : "src/AppBundle/Model/Mapping",
+      "Model\\" : "src/AppBundle/Model",
       "SymfonyStandard\\": "app/SymfonyStandard/"
     }
   },

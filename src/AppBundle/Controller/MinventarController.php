@@ -22,24 +22,41 @@ use Mandango\Connection;
 use Mandango\Mandango;
 use Model\Mapping as Mapping;
 
-
-
+/**
+ * Class MinventarController
+ *
+ * Controller class for the Minventar backend service.
+ *
+ * @package AppBundle\Controller
+ */
 class MinventarController extends Controller
 {
 
+    /**
+     * @var the Mandango object
+     */
     private $mandango;
 
+    /**
+     * Initializes the Mandango object.
+     */
     public function init()
     {
+        $configuration = parse_ini_file($_SERVER['DOCUMENT_ROOT'] . "/../app/config/minventar.ini");
+
         $metadataFactory = new Mapping\MetadataFactory();
         $cache = new FilesystemCache($_SERVER['DOCUMENT_ROOT'] . "/../app/Resources/mongocache");
         $this->mandango = new Mandango($metadataFactory, $cache);
-        $connection = new Connection('mongodb://localhost:27017', 'minventar');
+        $connection = new Connection($configuration['mongo_connection_string'], $configuration['mongo_database_name']);
         $this->mandango->setConnection('my_connection', $connection);
         $this->mandango->setDefaultConnectionName('my_connection');
     }
 
     /**
+     * Service method to get all resources. Can be filtered by id, name and/or type via URL parameters.
+     *
+     * e.g.: ?id=55cb0842a0416ebac6ac6797&name=Example&type=55cb0842a0416ebac6ac6796
+     *
      * @Route("/minventar/api/resources")
      * @Method("GET")
      */
@@ -68,16 +85,19 @@ class MinventarController extends Controller
         $resourceRepository = $this->mandango->getRepository('Model\Resource');
 
         $resources = $resourceRepository->createQuery()->criteria($criteria)->all();
-        return new JsonResponse(MinventarController::convertMandagoObjectsToArray($resources));
+        return new JsonResponse(static::convertMandagoDocumentsToArray($resources));
     }
 
     /**
+     * Service method to get all resource types. Can be filtered by id, name and/or bundle/notBundle via URL parameters.
+     *
+     * e.g.: ?id=55cb0842a0416ebac6ac6797&name=Example&is_bundle=true
+     *
      * @Route("/minventar/api/resource_types")
      * @Method("GET")
      */
     public function getAllResourceTypesAction(Request $request)
     {
-
         $this->init();
 
         $id = $request->query->get('id');
@@ -103,10 +123,12 @@ class MinventarController extends Controller
         $resourceTypes = $resourceTypeRepository->createQuery()->criteria($criteria)->all();
 
 
-        return new JsonResponse(MinventarController::convertMandagoObjectsToArray($resourceTypes));
+        return new JsonResponse(static::convertMandagoDocumentsToArray($resourceTypes));
     }
 
     /**
+     * Service method to delete a single resource.
+     *
      * @Route("/minventar/api/resources/{id}")
      * @Method("DELETE")
      */
@@ -128,6 +150,8 @@ class MinventarController extends Controller
     }
 
     /**
+     * Service method to delete a single resource type.
+     *
      * @Route("/minventar/api/resource_types/{id}")
      * @Method("DELETE")
      */
@@ -149,6 +173,10 @@ class MinventarController extends Controller
     }
 
     /**
+     * Service method to create a single resource via post request. Automatically generates a new MongoID. Returns the created resource.
+     *
+     * e.g.: {"name":"Example1","type":"55cb0842a0416ebac6ac6797","attributes":[{"name":"name","value":"Example"},{"name":"number","value":"1"}],"resources":[]}
+     *
      * @Route("/minventar/api/resources")
      * @Method("POST")
      */
@@ -195,6 +223,10 @@ class MinventarController extends Controller
     }
 
     /**
+     * Service method to create a single resource type via post request. Automatically generates a new MongoID. Returns the created resource type.
+     *
+     * e.g.: {"name":"ExampleType","is_bundle":false,"attributes":[{"name":"name","type":"String"},{"name":"number","type":"Number"}]}
+     *
      * @Route("/minventar/api/resource_types")
      * @Method("POST")
      */
@@ -228,11 +260,16 @@ class MinventarController extends Controller
         return new JsonResponse($resourceType->toArray());
     }
 
-    private static function convertMandagoObjectsToArray($objects)
+    /**
+     * Calls the toArray() function for all elements of an one dimensional array of Resources/ResourceTypes and merges the results into a single array.
+     * @param $documents
+     * @return array
+     */
+    private static function convertMandagoDocumentsToArray($documents)
     {
         $result = array();
 
-        foreach ($objects as $object) {
+        foreach ($documents as $object) {
             array_push($result, $object->toArray());
         }
 

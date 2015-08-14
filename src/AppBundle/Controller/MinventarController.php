@@ -22,6 +22,7 @@ use Mandango\Connection;
 use Mandango\Mandango;
 use Model\Mapping as Mapping;
 
+
 /**
  * Class MinventarController
  *
@@ -59,6 +60,7 @@ class MinventarController extends Controller
      *
      * @Route("/minventar/api/resources")
      * @Method("GET")
+     * @return a JSON containing the requested resources
      */
     public function getAllResourcesAction(Request $request)
     {
@@ -95,6 +97,7 @@ class MinventarController extends Controller
      *
      * @Route("/minventar/api/resource_types")
      * @Method("GET")
+     * @return a JSON containing the requested resource types
      */
     public function getAllResourceTypesAction(Request $request)
     {
@@ -117,7 +120,6 @@ class MinventarController extends Controller
             $criteria['is_bundle'] = $isBundle == 'true' ? true : false;
         }
 
-
         $resourceTypeRepository = $this->mandango->getRepository('Model\ResourceType');
 
         $resourceTypes = $resourceTypeRepository->createQuery()->criteria($criteria)->all();
@@ -127,10 +129,11 @@ class MinventarController extends Controller
     }
 
     /**
-     * Service method to delete a single resource.
+     * Service method to delete a single resource. A resource can only be deleted if there is no bundle containing it.
      *
      * @Route("/minventar/api/resources/{id}")
      * @Method("DELETE")
+     * @return Status 200 if a resource was deleted, Status 404 if the resource wasn't found or Status 400 if the resource is still contained in a bundle
      */
     public function deleteResourcesAction(Request $request, $id)
     {
@@ -138,37 +141,69 @@ class MinventarController extends Controller
 
         $resourceRepository = $this->mandango->getRepository('Model\Resource');
 
-        $resource = $resourceRepository->findOneById($id);
-        if ($resource != null) {
-            $resourceRepository->delete($resource);
-            return new Response();
+        $criteria = array();
+        $criteria['resources'] = new \MongoId($id);
+
+        $bundles = $resourceRepository->createQuery()->criteria($criteria)->all();
+
+        if (empty($bundles)) {
+            $resource = $resourceRepository->findOneById($id);
+            if ($resource != null) {
+                $resourceRepository->delete($resource);
+                return new Response();
+            } else {
+                $response = new Response();
+                $response->setStatusCode(Response::HTTP_NOT_FOUND);
+                return $response;
+            }
         } else {
             $response = new Response();
-            $response->setStatusCode(Response::HTTP_NOT_FOUND);
+            $response->setStatusCode(Response::HTTP_BAD_REQUEST);
+            $response->setContent("Requested resource is still being used.");
             return $response;
         }
     }
 
     /**
-     * Service method to delete a single resource type.
+     * Service method to delete a single resource type. A resource type can only be deleted if there are now resources with this type.
      *
      * @Route("/minventar/api/resource_types/{id}")
      * @Method("DELETE")
+     * @return Status 200 if a resource type was deleted, Status 404 if the resource type wasn't found or Status 400 if the type is still in use
      */
     public function deleteResourceTypeAction(Request $request, $id)
     {
         $this->init();
 
-        $resourceTypeRepository = $this->mandango->getRepository('Model\ResourceType');
+        $resourceRepository = $this->mandango->getRepository('Model\Resource');
 
-        $resource = $resourceTypeRepository->findOneById($id);
-        if ($resource != null) {
-            $resourceTypeRepository->delete($resource);
-            return new Response();
+        $criteria = array();
+        $criteria['type'] = new \MongoId($id);
+
+        $resources = $resourceRepository->createQuery()->criteria($criteria)->all();
+
+        //if no resources has the requested type
+        if (empty($resources)) {
+
+            $resourceTypeRepository = $this->mandango->getRepository('Model\ResourceType');
+            $resource = $resourceTypeRepository->findOneById($id);
+
+            if ($resource != null) {
+                $resourceTypeRepository->delete($resource);
+                return new Response();
+            } else {
+                $response = new Response();
+                $response->setStatusCode(Response::HTTP_NOT_FOUND);
+                return $response;
+            }
+
         } else {
+
             $response = new Response();
-            $response->setStatusCode(Response::HTTP_NOT_FOUND);
+            $response->setStatusCode(Response::HTTP_BAD_REQUEST);
+            $response->setContent("Requested type is still being used.");
             return $response;
+
         }
     }
 
@@ -179,6 +214,7 @@ class MinventarController extends Controller
      *
      * @Route("/minventar/api/resources")
      * @Method("POST")
+     * @return the created resource
      */
     public function createResourceAction(Request $request)
     {
@@ -205,16 +241,13 @@ class MinventarController extends Controller
             $attributes->add($attribute);
         }
 
-
         $innerResourcesIDs = $input['resources'];
 
-        if (!empty($innerResourcesIDs)) {
-            $innerResources = $resource->getResources();
-            $resourceRepository = $this->mandango->getRepository('Model\Resource');
-            foreach ($innerResourcesIDs as $innerResourcesID) {
-                $innerResource = $resourceRepository->findOneById($innerResourcesID);
-                $innerResources->add($innerResource);
-            }
+        $innerResources = $resource->getResources();
+        $resourceRepository = $this->mandango->getRepository('Model\Resource');
+        foreach ($innerResourcesIDs as $innerResourcesID) {
+            $innerResource = $resourceRepository->findOneById($innerResourcesID);
+            $innerResources->add($innerResource);
         }
 
         $resource->save();
@@ -229,6 +262,7 @@ class MinventarController extends Controller
      *
      * @Route("/minventar/api/resource_types")
      * @Method("POST")
+     * @return the created resource type
      */
     public function createResourceTypeAction(Request $request)
     {
@@ -254,10 +288,41 @@ class MinventarController extends Controller
             $attributes->add($attribute);
         }
 
-
         $resourceType->save();
 
         return new JsonResponse($resourceType->toArray());
+    }
+
+    /**
+     * Adds a resource to a bundle.
+     * @Route("/minventar/api/resources/{bundle}/add/{resource}")
+     * @Method("PATCH")
+     */
+    public function addResourceToBundleAction(Request $request, $bundle, $resource)
+    {
+        $this->init();
+        $resourceRepository = $this->mandango->getRepository('Model\Resource');
+        $bundleDoc = $resourceRepository->findOneById(new \MongoId($bundle));
+        $resources = $bundleDoc->getResources();
+        $resources->add($resourceRepository->findOneById(new \MongoId($resource)));
+        $bundleDoc->save();
+        return new Response();
+    }
+
+    /**
+     * Removes a resource from a bundle.
+     * @Route("/minventar/api/resources/{bundle}/rmv/{resource}")
+     * @Method("PATCH")
+     */
+    public function removeResourceToBundleAction(Request $request, $bundle, $resource)
+    {
+        $this->init();
+        $resourceRepository = $this->mandango->getRepository('Model\Resource');
+        $bundleDoc = $resourceRepository->findOneById(new \MongoId($bundle));
+        $resources = $bundleDoc->getResources();
+        $resources->remove($resourceRepository->findOneById(new \MongoId($resource)));
+        $bundleDoc->save();
+        return new Response();
     }
 
     /**

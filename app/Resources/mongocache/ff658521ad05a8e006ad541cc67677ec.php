@@ -3,9 +3,8 @@
 return array (
   'fields' => 
   array (
-    'type' => 1,
-    'resources' => 1,
-    'attributes' => 1,
     'name' => 1,
+    'is_bundle' => 1,
+    'attributes' => 1,
   ),
 );

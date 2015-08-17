@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Daniel Schulz
- * Date: 12.08.2015
- * Time: 11:15
- */
 
 namespace AppBundle\Controller;
 
@@ -38,17 +32,16 @@ class MinventarController extends Controller
      */
     private $mandango;
 
+
     /**
      * Initializes the Mandango object.
      */
     public function init()
     {
-        $configuration = parse_ini_file($_SERVER['DOCUMENT_ROOT'] . "/../app/config/minventar.ini");
-
         $metadataFactory = new Mapping\MetadataFactory();
-        $cache = new FilesystemCache($_SERVER['DOCUMENT_ROOT'] . "/../app/Resources/mongocache");
+        $cache = new FilesystemCache($this->get('kernel')->getRootDir() . "/Resources/mongocache");
         $this->mandango = new Mandango($metadataFactory, $cache);
-        $connection = new Connection($configuration['mongo_connection_string'], $configuration['mongo_database_name']);
+        $connection = new Connection($this->container->getParameter('mongo_connection_string'), $this->container->getParameter('mongo_database_name'));
         $this->mandango->setConnection('my_connection', $connection);
         $this->mandango->setDefaultConnectionName('my_connection');
     }
@@ -58,7 +51,7 @@ class MinventarController extends Controller
      *
      * e.g.: ?id=55cb0842a0416ebac6ac6797&name=Example&type=55cb0842a0416ebac6ac6796
      *
-     * @Route("/minventar/api/resources")
+     * @Route("/minventar/api/resources", name="getAllResources")
      * @Method("GET")
      * @return a JSON containing the requested resources
      */
@@ -66,27 +59,10 @@ class MinventarController extends Controller
     {
         $this->init();
 
-        $id = $request->query->get('id');
-        $mongoId = new \MongoId($id);
-        $name = $request->query->get('name');
-        $type = $request->query->get('type');
-        $mongoType = new \MongoId($type);
-
-        $criteria = array();
-
-        if ($id != null) {
-            $criteria['_id'] = $mongoId;
-        }
-        if ($name != null) {
-            $criteria['name'] = $name;
-        }
-        if ($type != null) {
-            $criteria['type'] = $mongoType;
-        }
-
+        $criteria = self::extractResourceCriteriaFromRequest($request);
         $resourceRepository = $this->mandango->getRepository('Model\Resource');
-
         $resources = $resourceRepository->createQuery()->criteria($criteria)->all();
+
         return new JsonResponse(static::convertMandagoDocumentsToArray($resources));
     }
 
@@ -103,27 +79,9 @@ class MinventarController extends Controller
     {
         $this->init();
 
-        $id = $request->query->get('id');
-        $mongoId = new \MongoId($id);
-        $name = $request->query->get('name');
-        $isBundle = $request->query->get('is_bundle');
-
-        $criteria = array();
-
-        if ($id != null) {
-            $criteria['_id'] = $mongoId;
-        }
-        if ($name != null) {
-            $criteria['name'] = $name;
-        }
-        if ($isBundle == 'true' || $isBundle == 'false') {
-            $criteria['is_bundle'] = $isBundle == 'true' ? true : false;
-        }
-
+        $criteria = $this->extractResourceTypeCriteriaFromRequest($request);
         $resourceTypeRepository = $this->mandango->getRepository('Model\ResourceType');
-
         $resourceTypes = $resourceTypeRepository->createQuery()->criteria($criteria)->all();
-
 
         return new JsonResponse(static::convertMandagoDocumentsToArray($resourceTypes));
     }
@@ -146,6 +104,7 @@ class MinventarController extends Controller
 
         $bundles = $resourceRepository->createQuery()->criteria($criteria)->all();
 
+        //if this resources is not contained by any bundle
         if (empty($bundles)) {
             $resource = $resourceRepository->findOneById($id);
             if ($resource != null) {
@@ -184,7 +143,6 @@ class MinventarController extends Controller
 
         //if no resources has the requested type
         if (empty($resources)) {
-
             $resourceTypeRepository = $this->mandango->getRepository('Model\ResourceType');
             $resource = $resourceTypeRepository->findOneById($id);
 
@@ -196,14 +154,11 @@ class MinventarController extends Controller
                 $response->setStatusCode(Response::HTTP_NOT_FOUND);
                 return $response;
             }
-
         } else {
-
             $response = new Response();
             $response->setStatusCode(Response::HTTP_BAD_REQUEST);
             $response->setContent("Requested type is still being used.");
             return $response;
-
         }
     }
 
@@ -240,16 +195,17 @@ class MinventarController extends Controller
             $attribute->setValue($attributeIn['value']);
             $attributes->add($attribute);
         }
+        if (isset($input['resources'])) {
+            $innerResourcesIDs = $input['resources'];
+            $innerResources = $resource->getResources();
 
-        $innerResourcesIDs = $input['resources'];
+            $resourceRepository = $this->mandango->getRepository('Model\Resource');
 
-        $innerResources = $resource->getResources();
-        $resourceRepository = $this->mandango->getRepository('Model\Resource');
-        foreach ($innerResourcesIDs as $innerResourcesID) {
-            $innerResource = $resourceRepository->findOneById($innerResourcesID);
-            $innerResources->add($innerResource);
+            foreach ($innerResourcesIDs as $innerResourcesID) {
+                $innerResource = $resourceRepository->findOneById($innerResourcesID);
+                $innerResources->add($innerResource);
+            }
         }
-
         $resource->save();
 
         return new JsonResponse($resource->toArray());
@@ -306,7 +262,8 @@ class MinventarController extends Controller
         $resources = $bundleDoc->getResources();
         $resources->add($resourceRepository->findOneById(new \MongoId($resource)));
         $bundleDoc->save();
-        return new Response();
+        return new JsonResponse($bundleDoc->toArray());
+
     }
 
     /**
@@ -322,7 +279,62 @@ class MinventarController extends Controller
         $resources = $bundleDoc->getResources();
         $resources->remove($resourceRepository->findOneById(new \MongoId($resource)));
         $bundleDoc->save();
-        return new Response();
+        return new JsonResponse($bundleDoc->toArray());
+    }
+
+    /**
+     * Extracts the criteria for a resource from a GET request.
+     * @param Request $request
+     * @return array associative array containing the criteria
+     */
+    private static function extractResourceCriteriaFromRequest(Request $request)
+    {
+        $id = $request->query->get('id');
+        $mongoId = new \MongoId($id);
+        $name = $request->query->get('name');
+        $type = $request->query->get('type');
+        $mongoType = new \MongoId($type);
+
+        $criteria = array();
+
+        if ($id != null) {
+            $criteria['_id'] = $mongoId;
+        }
+        if ($name != null) {
+            $criteria['name'] = $name;
+        }
+        if ($type != null) {
+            $criteria['type'] = $mongoType;
+            return $criteria;
+        }
+        return $criteria;
+    }
+
+    /**
+     * Extracts the criteria for a resource type from a GET request.
+     * @param Request $request
+     * @return array associative array containing the criteria
+     */
+    private function extractResourceTypeCriteriaFromRequest(Request $request)
+    {
+        $id = $request->query->get('id');
+        $mongoId = new \MongoId($id);
+        $name = $request->query->get('name');
+        $isBundle = $request->query->get('is_bundle');
+
+        $criteria = array();
+
+        if ($id != null) {
+            $criteria['_id'] = $mongoId;
+        }
+        if ($name != null) {
+            $criteria['name'] = $name;
+        }
+        if ($isBundle == 'true' || $isBundle == 'false') {
+            $criteria['is_bundle'] = $isBundle == 'true' ? true : false;
+            return $criteria;
+        }
+        return $criteria;
     }
 
     /**
@@ -340,6 +352,5 @@ class MinventarController extends Controller
 
         return $result;
     }
-
 
 }

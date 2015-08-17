@@ -14,3 +14,7 @@ web_profiler:
 
 swiftmailer:
     disable_delivery: true
+
+parameters:
+    mongo_connection_string: mongodb://localhost:27017
+    mongo_database_name: minventar_test

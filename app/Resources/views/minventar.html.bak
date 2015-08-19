@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Minventar</title>
+
+    <script src="/vendor/components/jquery/jquery.js"></script>
+    <script src="/vendor/components/underscore/underscore.js"></script>
+    <script src="/vendor/components/backbone/backbone.js"></script>
+    <link rel="stylesheet" href="/vendor/twbs/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" href="/vendor/twbs/bootstrap/dist/css/bootstrap-theme.css">
+    <script src="/vendor/twbs/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="/vendor/components/handlebars.js/handlebars.js"></script>
+    <script src="/js/minventar.js"></script>
+
+</head>
+<body>
+
+<div class="container-fluid">
+
+    <h1 id="heading">Resources</h1>
+
+    <div class="row"><br></div>
+
+    <div id="control-bar" class="well">
+        <button id="creation-button" type="button" class="btn btn-primary btn-lg">Create resource</button>
+        <div class="row"><br></div>
+
+        <div class="row">
+            <div class="col-sm-1">
+                <div class="radio">
+                    <label class="active"><input
+                            id="resources-radio" type="radio" name="overviewtype" checked>Resources</label>
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="radio">
+                    <label><input id="resources-type-radio" type="radio" name="overviewtype">Resource types</label>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="creation-dialog" style="visibility: hidden">
+        <div class="row"><br></div>
+        <div class="col-sm-6">
+            <form class="form-horizontal" role="form">
+                <div class="form-group">
+                    <label class="control-label col-sm-2">Name:</label>
+
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="input-name" placeholder="Enter name">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-2">Is bundle:</label>
+
+                    <div class="col-sm-10">
+                        <input type="checkbox" id="input-is-bundle">
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <!--Example-->
+                    <div class="row">
+                        <div class="col-sm-5">
+                            <input type="text" class="form-control" id="attr1-name" placeholder="Enter attribute name"
+                                   value="Example">
+                        </div>
+                        <div class=" col-sm-3">
+                            <div class="dropdown">
+                                <button class="btn btn-default dropdown-toggle" type="button" id="attr1-type"
+                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                    Number
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                                    <li><a href="#">String</a></li>
+                                    <li><a href="#">Text</a></li>
+                                    <li><a href="#">Number</a></li>
+                                </ul>
+                                <button type="button" class="btn btn-link"><span class="glyphicon glyphicon-minus"
+                                                                                 style="color:red"></span></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row"><br></div>
+                    <div class="row">
+                        <div class="col-sm-5">
+                            <input type="text" class="form-control" id="new-attr" placeholder="Add a new attribute">
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="dropdown">
+                                <button class="btn btn-default dropdown-toggle" type="button" id="new-attr-type"
+                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                    Type
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                                    <li><a href="#">String</a></li>
+                                    <li><a href="#">Text</a></li>
+                                    <li><a href="#">Number</a></li>
+                                </ul>
+                                <button type="button" class="btn btn-link"><span class="glyphicon glyphicon-plus"
+                                                                                 style="color:#008000"></span></button>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 pull-right text-right">
+                            <button type="submit" class="btn btn-primary">Create</button>
+                            <button type="button" class="btn btn-default">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="row"><br></div>
+    </div>
+
+    <div class="row"><br></div>
+
+    <div id="data-table">
+        <!--placeholder-->
+        <table class="table table-bordered table-hover">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Attributes</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Mein Tisch</td>
+                <td>Tisch</td>
+                <td>Typ: Holz, Höhe: 1,80cm</td>
+            </tr>
+            <tr>
+                <td>Daniel</td>
+                <td>Mitarbeiter</td>
+                <td>Nachname: Schulz</td>
+            </tr>
+            <tr>
+                <td>Nostromo</td>
+                <td>Raum</td>
+                <td>Fläche: 50m²</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>

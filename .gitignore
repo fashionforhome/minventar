@@ -10,3 +10,6 @@
 /vendor/
 /bin/
 /composer.phar
+/app/Resources/mongocache/*
+/web/vendor/
+/components/

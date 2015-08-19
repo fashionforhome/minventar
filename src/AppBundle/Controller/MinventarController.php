@@ -51,7 +51,7 @@ class MinventarController extends Controller
      *
      * e.g.: ?id=55cb0842a0416ebac6ac6797&name=Example&type=55cb0842a0416ebac6ac6796
      *
-     * @Route("/minventar/api/resources", name="getAllResources")
+     * @Route("/minventar/api/resources")
      * @Method("GET")
      * @return a JSON containing the requested resources
      */

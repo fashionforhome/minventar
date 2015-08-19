@@ -6,7 +6,7 @@
   "autoload": {
     "psr-4": {
       "": "src/",
-      "Model\\" : "src/AppBundle/Model",
+      "Model\\": "src/AppBundle/Model",
       "SymfonyStandard\\": "app/SymfonyStandard/"
     }
   },
@@ -23,7 +23,11 @@
     "sensio/framework-extra-bundle": "~3.0,>=3.0.2",
     "incenteev/composer-parameter-handler": "~2.0",
     "mandango/mandango": "1.0.*@dev",
-    "mandango/mondator": "1.0.*@dev"
+    "mandango/mondator": "1.0.*@dev",
+    "twbs/bootstrap": "3.3.*",
+    "components/backbone": "1.2.*",
+    "components/jquery": "2.1.*",
+    "components/handlebars.js": "3.0.*"
   },
   "require-dev": {
     "sensio/generator-bundle": "~2.3"
@@ -52,7 +56,8 @@
     ]
   },
   "config": {
-    "bin-dir": "bin"
+    "bin-dir": "bin",
+    "vendor-dir": "web/vendor"
   },
   "extra": {
     "symfony-app-dir": "app",

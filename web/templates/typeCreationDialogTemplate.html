@@ -1,10 +1,11 @@
 <div id="type-creation-dialog" class="col-sm-6">
-    <form class="form-horizontal" role="form">
+    <div class="row"><br></div>
+    <form id="creation-form" class="form-horizontal" role="form">
         <div class="form-group">
             <label class="control-label col-sm-2">Name:</label>
 
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="input-name" placeholder="Enter name">
+                <input type="text" class="form-control" id="input-name" placeholder="Enter name" required>
             </div>
         </div>
         <div class="form-group">
@@ -15,6 +16,8 @@
             </div>
         </div>
 
+        <div class="row"><br></div>
+        <div id="input-attributes"></div>
 
         <div id="add-attr-dialog" class="row">
             <div class="col-sm-5">
@@ -40,7 +43,6 @@
                 <button id="cancel-btn" type="button" class="btn btn-default">Cancel</button>
             </div>
         </div>
-        <div class="row"><br></div>
-        <div id="input-attributes"></div>
+
     </form>
 </div>

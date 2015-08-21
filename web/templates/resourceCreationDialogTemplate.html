@@ -1,6 +1,8 @@
-<div id="resource-creation-dialog" class="col-sm-6">
-    <div class="row"><br></div>
-    <form id="creation-form" class="form-horizontal" role="form">
+<div class="row"><br></div>
+<form id="creation-form" class="form-horizontal" role="form">
+    <div id="resource-creation-dialog" class="col-sm-6">
+
+
         <div class="form-group">
             <label class="control-label col-sm-2">Name:</label>
 
@@ -20,11 +22,32 @@
         </div>
 
         <div id="input-resource-attributes"></div>
+        <div class="row"><br></div>
+        <div id="input-content"></div>
 
-        <div class="col-sm-4 pull-right text-right">
-            <button id="create-btn" type="submit" class="btn btn-primary">Create</button>
-            <button id="cancel-btn" type="button" class="btn btn-default">Cancel</button>
+        <div class="row">
+            <div class="col-sm-4 pull-right text-right">
+                <button id="create-btn" type="submit" class="btn btn-primary">Create</button>
+                <button id="cancel-btn" type="button" class="btn btn-default">Cancel</button>
+            </div>
         </div>
 
-    </form>
-</div>
+
+    </div>
+    <div id="add-resource-dialog" class="form-group col-sm-6" style="visibility: hidden">
+        <label class="control-label col-sm-3">Add resource:</label>
+
+        <div class="col-sm-5">
+
+            <select id="new-resource" class="form-control" style="width: auto">
+            </select>
+
+        </div>
+        <button id="add-resource" type="button" class="btn btn-link"><span
+                class="glyphicon glyphicon-plus"
+                style="color:#008000"></span>
+        </button>
+        <div class="row"><br></div>
+        <div id="content"></div>
+    </div>
+</form>

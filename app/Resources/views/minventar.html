@@ -12,7 +12,12 @@
     <link rel="stylesheet" href="/vendor/twbs/bootstrap/dist/css/bootstrap-theme.css">
     <script src="/vendor/twbs/bootstrap/dist/js/bootstrap.js"></script>
     <script src="/vendor/components/handlebars.js/handlebars.js"></script>
-    <script src="/js/minventar.js"></script>
+
+    <script src="/js/models/minventarModels.js"></script>
+    <script src="/js/views/minventarView.js"></script>
+    <script src="/js/app.js"></script>
+
+    <!--<script src="/js/minventar.js"></script>-->
 
 </head>
 <body>
@@ -46,8 +51,28 @@
 
     <div id="creation-dialog"></div>
     <div class="row"><br></div>
-
     <div class="row"><br></div>
+    <div id="filter-dialog" class="well well-sm">
+        <form id="filter-form" class="form-inline" role="form">
+            <div class=" pull-right text-right">
+                <div class="form-group ">
+                    <label class="control-label ">Name:</label>
+                    <input type="text" class="form-control" id="name-filter" placeholder="Enter name" required>
+
+                </div>
+                <div class="form-group col-sm4"><label class="control-label ">Is bundle:</label>
+                    <input type="checkbox" id="is-bundle-filter">
+
+                </div>
+                <div class="form-group col-sm4">
+                    <button id="filter-btn" type="submit" class="btn btn-primary">Filter</button>
+                    <button id="filter-reset-btn" type="button" class="btn btn-default">Reset</button>
+                </div>
+            </div>
+        </form>
+        <div class="row"><br></div>
+    </div>
+
 
     <div id="data-table">
         <!--placeholder-->

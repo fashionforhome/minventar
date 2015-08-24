@@ -283,11 +283,66 @@ class MinventarController extends Controller
     }
 
     /**
-     * Updates a resource type. Note: only the name of a type can be changed.
-     * @Route("/minventar/api/resource_types/{type}")
+     * Updates a resource completely.
+     * @Route("/minventar/api/resources/{id}")
      * @Method("PUT")
      */
-    public function updateRersourceTypeAction(Request $request, $type)
+    public function updateResourceAction(Request $request, $id)
+    {
+        $this->init();
+
+        $input = json_decode((string)$request->getContent(), true);
+        $resourcesRepository = $this->mandango->getRepository('Model\Resource');
+
+
+        $resource = $resourcesRepository->findOneById(new \MongoId($id));
+
+        $name = $input['name'];
+
+        $resource->setName($name);
+
+        $typeID = $input['type'];
+        $type = $this->mandango->getRepository('Model\ResourceType')->findOneById($typeID);
+        $resource->setType($type);
+
+        $attributesIn = $input['attributes'];
+        $attributes = $resource->getAttributes();
+        $i = 0;
+        foreach ($attributes as $attributeOld) {
+            $attributeOld->setName($attributesIn[$i]['name']);
+            $attributeOld->setValue($attributesIn[$i]['value']);
+            $i++;
+        }
+        if (isset($input['resources'])) {
+            $innerResourcesIDs = $input['resources'];
+            $innerResources = $resource->getResources();
+
+            foreach ($innerResources as $innerResource) {
+                $innerResources->remove($resourcesRepository->findOneById($innerResource->getId()));
+                $resource->save();
+            }
+
+
+            foreach ($innerResourcesIDs as $innerResourcesID) {
+                $innerResource = $resourcesRepository->findOneById($innerResourcesID);
+                $innerResources->add($innerResource);
+            }
+        }
+        $resource->save();
+        $this->init();
+        $resourcesRepository = $this->mandango->getRepository('Model\Resource');
+
+
+        $resource = $resourcesRepository->findOneById(new \MongoId($id));
+        return new JsonResponse($resource->toArray());
+    }
+
+    /**
+     * Updates a resource type. Note: only the name of a type can be changed.
+     * @Route("/minventar/api/resource_types/{id}")
+     * @Method("PUT")
+     */
+    public function updateResourceTypeAction(Request $request, $id)
     {
         $this->init();
 
@@ -295,7 +350,7 @@ class MinventarController extends Controller
         $resourceTypeRepository = $this->mandango->getRepository('Model\ResourceType');
 
 
-        $resourceType = $resourceTypeRepository->findOneById(new \MongoId($type));
+        $resourceType = $resourceTypeRepository->findOneById(new \MongoId($id));
 
         $name = $input['name'];
         $resourceType->setName($name);
@@ -377,5 +432,6 @@ class MinventarController extends Controller
 
         return $result;
     }
+
 
 }

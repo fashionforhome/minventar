@@ -229,6 +229,25 @@ class MinventarControllerFunctionalTest extends WebTestCase
         $this->assertEquals($expected, $actual);
     }
 
+    public function  testUpdateResource()
+    {
+        $this->setUpTestData();
+
+        $client = static::createClient();
+
+        $content = json_encode(array('name' => 'UpdatedTest', 'type' => '55cb0842a0416ebac6ac6797', 'attributes' => array(array('name' => 'color', 'value' => 'Red'))));
+        echo($content);
+        $client->request('PUT', '/minventar/api/resources/55cb097da0416ebac6ac6798', array(), array(), array(), $content, true);
+
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+
+        $actual = json_decode($client->getResponse()->getContent(), true);
+
+        $expected = array('id' => '55cb097da0416ebac6ac6798', 'name' => 'UpdatedTest', 'type' => '55cb0842a0416ebac6ac6797', 'attributes' => array(array('name' => 'color', 'value' => 'Red')), 'resources' => array());
+
+        $this->assertEquals($expected, $actual);
+    }
+
     public function  testUpdateResourceType()
     {
         $this->setUpTestData();

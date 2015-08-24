@@ -25,7 +25,8 @@ var MinventarView = Backbone.View.extend({
             "click #filter-reset-btn": "resetFilter",
             "click #edit-type-btn": "editType",
             "submit #type-update-dialog": "save",
-            "click #delete-btn": "delete"
+            "click #delete-btn": "delete",
+            "click #edit-resource-btn": "editResource"
         }
         ,
 
@@ -38,7 +39,7 @@ var MinventarView = Backbone.View.extend({
 
 
             this.showResourceFilter();
-            this.showResources();
+            this.showResources(this.resources.models);
         }
         ,
         render: function () {
@@ -57,7 +58,7 @@ var MinventarView = Backbone.View.extend({
                 $("#creation-button").html("Create resource");
                 $("#heading").text("Resources");
                 this.showResourceFilter();
-                this.showResources();
+                this.showResources(this.resources.models);
                 this.isTypeMode = false;
             }
         },
@@ -206,8 +207,9 @@ var MinventarView = Backbone.View.extend({
         },
 
         definedType: function (event) {
+            console.log("first");
             $("#input-resource-attributes").empty();
-            var resourceType = this.resourceTypes.models[($(event.target).find(":selected").index()) - 1];
+            var resourceType = this.resourceTypes.models[($("#input-type").find(":selected").index()) - 1];
             var attributes = resourceType.get("attributes");
 
             $.get("../templates/attributeSelectionTemplate.html", function (data) {
@@ -215,6 +217,7 @@ var MinventarView = Backbone.View.extend({
                     var attrName = attributes[i].name;
                     var attributeTemplateCompiled = Handlebars.compile(data, {noEscape: true});
                     var context = {attrName: attrName};
+                    console.log(attributeTemplateCompiled(context).toString());
                     $("#input-resource-attributes").append(attributeTemplateCompiled(context).toString());
                 }
             });
@@ -265,15 +268,15 @@ var MinventarView = Backbone.View.extend({
 
             if (resourceIndex != 0) {
                 console.log("adding resource");
-                // Nicht möglich! ID muss ins Option feld
                 var resourceID = $("#new-resource option:selected").attr("id");
                 console.log(resourceID);
                 var addedResourceHtml = '<div class="row bundled-resource" id="' + resourceID + '"><label  class="content-name control-label col-sm-3">';
                 addedResourceHtml = addedResourceHtml + resourceName + '</label><div class="col-sm-1"><button id="rmv-resource" type="button" class="btn btn-link"><span class="glyphicon glyphicon-minus"style="color:red"></span></button></div></div>';
                 $("#content").append(addedResourceHtml.toString());
+
+                $("#new-resource").find(":selected").remove();
+                $('#new-resource option[value=default-resource-selection]').prop('selected', true);
             }
-            $("#new-resource").find(":selected").remove();
-            $('#new-resource option[value=default-resource-selection]').prop('selected', true);
         },
 
 
@@ -307,14 +310,17 @@ var MinventarView = Backbone.View.extend({
 
                 var matchedTypes = this.resourceTypes.filter(function (model) {
                     console.log("filtering");
-                    var name = $("#name-filter").val();
+                    var name = $("#name-filter").val().toLowerCase();
                     console.log(name);
                     var mode = $("#filter-mode option:selected").index();
                     console.log(mode);
+
+                    var modelName = model.get('name').toLowerCase();
                     switch (mode) {
+
                         case 0:
                             if (name) {
-                                return model.get('name').indexOf(name) > -1;
+                                return modelName.indexOf(name) > -1;
                             } else {
                                 console.log("filtered name is empty ");
                                 return true;
@@ -322,9 +328,9 @@ var MinventarView = Backbone.View.extend({
 
                             break;
                         case 1:
-                            return model.get('name').indexOf(name) > -1 && model.get('is_bundle');
+                            return modelName.indexOf(name) > -1 && model.get('is_bundle');
                         case 2:
-                            return model.get('name').indexOf(name) > -1 && !model.get('is_bundle');
+                            return modelName.indexOf(name) > -1 && !model.get('is_bundle');
                     }
 
 
@@ -347,14 +353,13 @@ var MinventarView = Backbone.View.extend({
         },
         showTypes: function (types) {
             console.log("rendering types");
-            //console.log(JSON.stringify(types));
             var that = this;
             $.get("../templates/typesDataTableTemplate.html", function (data) {
                 var dataTableCompiled = Handlebars.compile(data, {noEscape: true});
                 var dataHtml = '';
                 for (var i = 0; i < types.length; i++) {
                     var type = types[i];
-                    dataHtml += '<tr class="data-row" id="' + type.get("id") + '">  <td>' + type.get("name");
+                    dataHtml += '<tr class="data-row" id="' + type.get("id") + '">  <td class="type-name">' + type.get("name");
                     dataHtml += '<div class="pull-right text-right">';
                     dataHtml += '<button id="edit-type-btn" type="button" class="btn btn-link"><span class="glyphicon glyphicon-edit"></span></button>';
                     dataHtml += (!type.get("is_bundle") ? '<button id="extend-bundle-btn" type="button" class="btn btn-link" style="cursor: default; color: #000000" ><span class="glyphicon glyphicon-file"></span></button>'
@@ -367,11 +372,27 @@ var MinventarView = Backbone.View.extend({
                 $("#data-table").html(dataTableCompiled(context).toString());
             });
         },
-        showResources: function () {
+        showResources: function (resources) {
+            console.log("rendering resources");
             var that = this;
             $.get("../templates/resourcesDataTableTemplate.html", function (data) {
                 var dataTableCompiled = Handlebars.compile(data, {noEscape: true});
-                $("#data-table").html(dataTableCompiled().toString());
+                var dataHtml = '';
+                for (var i = 0; i < resources.length; i++) {
+                    var resource = resources[i];
+                    var type = that.resourceTypes.findWhere({id: resource.get('type')});
+                    console.log(type.get('name'));
+                    dataHtml += '<tr class="data-row" id="' + resource.get("id") + '">  <td class="resource-name">' + resource.get("name");
+                    dataHtml += '<div class="pull-right text-right">';
+                    dataHtml += '<button id="edit-resource-btn" type="button" class="btn btn-link"><span class="glyphicon glyphicon-edit"></span></button>';
+                    dataHtml += (!type.get("is_bundle") ? '<button id="extend-bundle-btn" type="button" class="btn btn-link" style="cursor: default; color: #000000" ><span class="glyphicon glyphicon-file"></span></button>'
+                        : '<button id="extend-bundle-btn" type="button" class="btn btn-link"><span class="glyphicon glyphicon-folder-close"></span></button>');
+                    dataHtml += '</div>';
+                    dataHtml += "</td><td class='type-cell' id ='" + type.get("id") + "'>" + type.get("name") + "</td><td>" + that.attributesAsString(resource.get("attributes")) + "</td> </tr>";
+                }
+
+                var context = {data: dataHtml};
+                $("#data-table").html(dataTableCompiled(context).toString());
             });
         }, attributeDefinitionsAsString: function (attributes) {
             var result = "";
@@ -381,13 +402,62 @@ var MinventarView = Backbone.View.extend({
                 result += attribute.name + ": " + attribute.type + (i != attributes.length - 1 ? "<br>" : "");
             }
             return result;
+        }, attributesAsString: function (attributes) {
+            var result = "";
+            for (var i = 0; i < attributes.length; i++) {
+                var attribute = attributes[i];
+                // result += attribute.name + ": " + attribute.type + (i != attributes.length - 1 ? ", " : "");
+                result += attribute.name + ": " + attribute.value + (i != attributes.length - 1 ? "<br>" : "");
+            }
+            return result;
+        }, editResource: function (event) {
+            console.log("editing resource");
+            var that = this;
+            $.get("../templates/resourceUpdateDialogTemplate.html", function (data) {
+                var updateDialogTemplateCompiled = Handlebars.compile(data, {noEscape: true});
+
+                var typesHtml = '<option value="" disabled="disabled" selected="selected">Please select a type</option>';
+                var typeID = $(event.target).parents(".data-row").find(".type-cell").attr("id");
+                for (var i = 0; i < that.resourceTypes.models.length; i++) {
+                    var resourceType = that.resourceTypes.models[i];
+                    typesHtml = typesHtml + "<option id='" + resourceType.get("id") + "'" + (typeID == resourceType.get("id") ? 'selected="selected"' : "") + ">" + resourceType.get("name") + "</option>";
+                }
+                var id = $(event.target).parents(".data-row").attr("id");
+                var resource = that.resources.findWhere({id: id});
+                var name = $(event.target).parents(".data-row").find(".resource-name").text();
+                var contentHtml = "";
+                var context = {
+                    name: name,
+                    types: typesHtml.toString(),
+                    id: id,
+                    content: contentHtml
+                };
+//TODO value zu .attr-definition hinzufügen
+
+                $("#creation-dialog").html(updateDialogTemplateCompiled(context));
+                $("#creation-dialog").find(".actions-bar").attr("id", id);
+                that.definedType();
+                console.log($("#input-resource-attributes").find(".attr-definition"));
+                var i = 0;
+                console.log($(".attr-definition").first().attr("id"));
+                $(".attr-definition").each(function () {
+                    console.log("joojo");
+                    console.log(i);
+                    var attributeValue = $(this).find("#input-name").val(resource.get("attributes")[i].get("value"));
+                    $(this).find("#input-name").val(attributeValue);
+                    i++;
+                });
+            });
+            this.isCreationDialogOpen = true;
         },
         editType: function (event) {
             console.log("editing type");
             $.get("../templates/typeUpdateDialogTemplate.html", function (data) {
-                var updateDialogTemplateCompiled = Handlebars.compile(data);
+                var updateDialogTemplateCompiled = Handlebars.compile(data, {noEscape: true});
                 var id = $(event.target).parents(".data-row").attr("id");
-                $("#creation-dialog").html(updateDialogTemplateCompiled());
+                var name = $(event.target).parents(".data-row").find(".type-name").text();
+                var context = {id: id, name: name};
+                $("#creation-dialog").html(updateDialogTemplateCompiled(context));
                 $("#creation-dialog").find(".actions-bar").attr("id", id);
             });
             this.isCreationDialogOpen = true;
@@ -436,8 +506,12 @@ var MinventarView = Backbone.View.extend({
                         });
                         $("#creation-dialog").html('<div class="alert alert-success alert-dismissible col-sm-6" role="alert">    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Resource type successfully deleted</div>');
                     },
-                    error: function () {
-                        $("#creation-dialog").html('<div class="alert alert-danger alert-dismissible col-sm-6" role="alert">    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Error while deleting resource type</div>');
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        if (jqXHR.status == 400) {
+                            $("#creation-dialog").html('<div class="alert alert-danger alert-dismissible col-sm-6" role="alert">    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Resource type could not be deleted because it is still in use.</div>');
+                        } else {
+                            $("#creation-dialog").html('<div class="alert alert-danger alert-dismissible col-sm-6" role="alert">    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Error while deleting resource type</div>');
+                        }
                     }
                 });
                 this.isCreationDialogOpen = false;

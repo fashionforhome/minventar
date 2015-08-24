@@ -271,7 +271,7 @@ class MinventarController extends Controller
      * @Route("/minventar/api/resources/{bundle}/rmv/{resource}")
      * @Method("PATCH")
      */
-    public function removeResourceToBundleAction(Request $request, $bundle, $resource)
+    public function removeResourceFromBundleAction(Request $request, $bundle, $resource)
     {
         $this->init();
         $resourceRepository = $this->mandango->getRepository('Model\Resource');
@@ -281,6 +281,31 @@ class MinventarController extends Controller
         $bundleDoc->save();
         return new JsonResponse($bundleDoc->toArray());
     }
+
+    /**
+     * Updates a resource type. Note: only the name of a type can be changed.
+     * @Route("/minventar/api/resource_types/{type}")
+     * @Method("PUT")
+     */
+    public function updateRersourceTypeAction(Request $request, $type)
+    {
+        $this->init();
+
+        $input = json_decode((string)$request->getContent(), true);
+        $resourceTypeRepository = $this->mandango->getRepository('Model\ResourceType');
+
+
+        $resourceType = $resourceTypeRepository->findOneById(new \MongoId($type));
+
+        $name = $input['name'];
+        $resourceType->setName($name);
+
+        $resourceType->save();
+
+        return new JsonResponse($resourceType->toArray());
+
+    }
+
 
     /**
      * Extracts the criteria for a resource from a GET request.

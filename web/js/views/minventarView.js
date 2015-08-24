@@ -23,7 +23,9 @@ var MinventarView = Backbone.View.extend({
 
             "submit #filter-form": "filter",
             "click #filter-reset-btn": "resetFilter",
-            "click #edit-type-btn": "editType"
+            "click #edit-type-btn": "editType",
+            "submit #type-update-dialog": "save",
+            "click #delete-btn": "delete"
         }
         ,
 
@@ -299,12 +301,11 @@ var MinventarView = Backbone.View.extend({
                 $("#filter-dialog").html(filterCompiled(context).toString());
             });
         },
-        //TODO
         filter: function (event) {
             event.preventDefault();
             if (this.isTypeMode) {
 
-                var matchedTypes = this.resourceTypes.where(function (model) {
+                var matchedTypes = this.resourceTypes.filter(function (model) {
                     console.log("filtering");
                     var name = $("#name-filter").val();
                     console.log(name);
@@ -353,13 +354,13 @@ var MinventarView = Backbone.View.extend({
                 var dataHtml = '';
                 for (var i = 0; i < types.length; i++) {
                     var type = types[i];
-                    dataHtml += '<tr id="' + type.get("id") + '">  <td>' + type.get("name");
+                    dataHtml += '<tr class="data-row" id="' + type.get("id") + '">  <td>' + type.get("name");
                     dataHtml += '<div class="pull-right text-right">';
                     dataHtml += '<button id="edit-type-btn" type="button" class="btn btn-link"><span class="glyphicon glyphicon-edit"></span></button>';
                     dataHtml += (!type.get("is_bundle") ? '<button id="extend-bundle-btn" type="button" class="btn btn-link" style="cursor: default; color: #000000" ><span class="glyphicon glyphicon-file"></span></button>'
                         : '<button id="extend-bundle-btn" type="button" class="btn btn-link" style="cursor: default;"><span class="glyphicon glyphicon-folder-close"></span></button>');
                     dataHtml += '</div>';
-                    dataHtml += "</td> <td>" + JSON.stringify(type.get("attributes")) + "</td> </tr>";
+                    dataHtml += "</td> <td>" + that.attributeDefinitionsAsString(type.get("attributes")) + "</td> </tr>";
                 }
 
                 var context = {data: dataHtml};
@@ -372,9 +373,77 @@ var MinventarView = Backbone.View.extend({
                 var dataTableCompiled = Handlebars.compile(data, {noEscape: true});
                 $("#data-table").html(dataTableCompiled().toString());
             });
+        }, attributeDefinitionsAsString: function (attributes) {
+            var result = "";
+            for (var i = 0; i < attributes.length; i++) {
+                var attribute = attributes[i];
+                // result += attribute.name + ": " + attribute.type + (i != attributes.length - 1 ? ", " : "");
+                result += attribute.name + ": " + attribute.type + (i != attributes.length - 1 ? "<br>" : "");
+            }
+            return result;
         },
-        editType: function () {
+        editType: function (event) {
+            console.log("editing type");
+            $.get("../templates/typeUpdateDialogTemplate.html", function (data) {
+                var updateDialogTemplateCompiled = Handlebars.compile(data);
+                var id = $(event.target).parents(".data-row").attr("id");
+                $("#creation-dialog").html(updateDialogTemplateCompiled());
+                $("#creation-dialog").find(".actions-bar").attr("id", id);
+            });
+            this.isCreationDialogOpen = true;
+        },
+        save: function (event) {
+            event.preventDefault();
+            var that = this;
+            if (this.isTypeMode) {
+                console.log("saving type");
+                var resourceType = {};
+                resourceType.name = $(event.target).find("#input-name").val();
+                var id = $(".actions-bar").attr("id");
+                console.log(id);
+                console.log(JSON.stringify(resourceType));
+                $.ajax({
+                    type: "PUT",
+                    url: "minventar/api/resource_types/" + id,
+                    data: JSON.stringify(resourceType),
+                    success: function () {
+                        that.resourceTypes.fetch().always(function () {
+                            success: that.showTypes(that.resourceTypes.models)
+                        });
+                        $("#creation-dialog").html('<div class="alert alert-success alert-dismissible col-sm-6" role="alert">    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Resource type successfully changed</div>');
+                    },
+                    error: function () {
+                        $("#creation-dialog").html('<div class="alert alert-danger alert-dismissible col-sm-6" role="alert">    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Error while changing resource type</div>');
+                    }
+                });
+                this.isCreationDialogOpen = false;
+            } else {
 
+            }
+        }, delete: function (event) {
+            event.preventDefault();
+            var that = this;
+            if (this.isTypeMode) {
+                console.log("deleting type");
+                var id = $(".actions-bar").attr("id");
+                console.log(id);
+                $.ajax({
+                    type: "DELETE",
+                    url: "minventar/api/resource_types/" + id,
+                    success: function () {
+                        that.resourceTypes.fetch().always(function () {
+                            success: that.showTypes(that.resourceTypes.models)
+                        });
+                        $("#creation-dialog").html('<div class="alert alert-success alert-dismissible col-sm-6" role="alert">    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Resource type successfully deleted</div>');
+                    },
+                    error: function () {
+                        $("#creation-dialog").html('<div class="alert alert-danger alert-dismissible col-sm-6" role="alert">    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Error while deleting resource type</div>');
+                    }
+                });
+                this.isCreationDialogOpen = false;
+            } else {
+
+            }
         }
     }
 );

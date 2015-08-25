@@ -6,6 +6,5 @@
  */
 $(document).ready(function () {
     var minventarView = new MinventarView({el: $("#minventar")});
-    $('.tree').treegrid();
 })
 ;

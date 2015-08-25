@@ -438,8 +438,11 @@ var MinventarView = Backbone.View.extend({
                 for (var i = 0; i < resources.length; i++) {
                     var resource = resources[i];
                     var type = that.resourceTypes.findWhere({id: resource.get('type')});
-                    console.log(type.get('name'));
-                    dataHtml += '<tr class="data-row" id="' + resource.get("id") + '">  <td class="resource-name">' + resource.get("name");
+//TODO Methode zum sortieren der zeilen schreiben (available resources rekursiv nacheinander)
+                    var parent = that.getParentResource(resource.get("id"));
+
+                    //console.log(type.get('name'));
+                    dataHtml += '<tr class="data-row treegrid-' + resource.get("id") + (!parent ? ' ' : ' treegrid-parent-' + parent.get('id')) + '" id="' + resource.get("id") + '">  <td class="resource-name">' + resource.get("name");
                     dataHtml += '<div class="pull-right text-right">';
                     dataHtml += '<button id="edit-resource-btn" type="button" class="btn btn-link"><span class="glyphicon glyphicon-edit"></span></button>';
                     dataHtml += (!type.get("is_bundle") ? '<button type="button" class="btn btn-link" style="cursor: default; color: #000000" ><span class="glyphicon glyphicon-file"></span></button>'
@@ -450,6 +453,10 @@ var MinventarView = Backbone.View.extend({
 
                 var context = {data: dataHtml};
                 $("#data-table").html(dataTableCompiled(context).toString());
+                $('.tree').treegrid();
+
+                console.log($("#data-table").html());
+
             });
         }, attributeDefinitionsAsString: function (attributes) {
             var result = "";

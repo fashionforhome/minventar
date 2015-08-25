@@ -22,6 +22,7 @@
       <excludeFolder url="file://$MODULE_DIR$/web/vendor/kriswallsmith/assetic" />
       <excludeFolder url="file://$MODULE_DIR$/web/vendor/mandango/mandango" />
       <excludeFolder url="file://$MODULE_DIR$/web/vendor/mandango/mondator" />
+      <excludeFolder url="file://$MODULE_DIR$/web/vendor/maxazan/jquery-treegrid" />
       <excludeFolder url="file://$MODULE_DIR$/web/vendor/monolog/monolog" />
       <excludeFolder url="file://$MODULE_DIR$/web/vendor/psr/log" />
       <excludeFolder url="file://$MODULE_DIR$/web/vendor/robloach/component-installer" />
@@ -74,6 +75,7 @@
           <root url="file://$MODULE_DIR$/web/vendor/symfony/symfony" />
           <root url="file://$MODULE_DIR$/web/vendor/doctrine/cache" />
           <root url="file://$MODULE_DIR$/web/vendor/doctrine/lexer" />
+          <root url="file://$MODULE_DIR$/web/vendor/maxazan/jquery-treegrid" />
           <root url="file://$MODULE_DIR$/web/vendor/sensio/framework-extra-bundle" />
           <root url="file://$MODULE_DIR$/web/vendor/composer" />
           <root url="file://$MODULE_DIR$/web/vendor/twig/twig" />
@@ -110,6 +112,7 @@
           <root url="file://$MODULE_DIR$/web/vendor/symfony/symfony" />
           <root url="file://$MODULE_DIR$/web/vendor/doctrine/cache" />
           <root url="file://$MODULE_DIR$/web/vendor/doctrine/lexer" />
+          <root url="file://$MODULE_DIR$/web/vendor/maxazan/jquery-treegrid" />
           <root url="file://$MODULE_DIR$/web/vendor/sensio/framework-extra-bundle" />
           <root url="file://$MODULE_DIR$/web/vendor/composer" />
           <root url="file://$MODULE_DIR$/web/vendor/twig/twig" />

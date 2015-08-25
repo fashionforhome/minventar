@@ -1,10 +1,10 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "d1aa2b81ae4c448d9d4858fb1ebf3d50",
+    "hash": "20dc988cea9d272d50c96b2ac624a5c0",
     "packages": [
         {
             "name": "components/backbone",
@@ -1179,6 +1179,35 @@
                 "class-generator"
             ],
             "time": "2013-11-02 17:10:18"
+        },
+        {
+            "name": "maxazan/jquery-treegrid",
+            "version": "0.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/maxazan/jquery-treegrid.git",
+                "reference": "c8ba9e9604620002155d01a947cceffe18d4428c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/maxazan/jquery-treegrid/zipball/c8ba9e9604620002155d01a947cceffe18d4428c",
+                "reference": "c8ba9e9604620002155d01a947cceffe18d4428c",
+                "shasum": ""
+            },
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "jquery treegrid plugin",
+            "homepage": "http://maxazan.github.io/jquery-treegrid",
+            "keywords": [
+                "grid",
+                "jquery",
+                "tree",
+                "treegrid"
+            ],
+            "time": "2015-02-03 14:17:28"
         },
         {
             "name": "monolog/monolog",

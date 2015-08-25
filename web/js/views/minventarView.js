@@ -24,8 +24,8 @@ var MinventarView = Backbone.View.extend({
             "submit #filter-form": "filter",
             "click #filter-reset-btn": "resetFilter",
             "click #edit-type-btn": "editType",
-            "submit #update-form": "save",
-            "click #delete-btn": "delete",
+            "click #save-btn": "save",
+            "click  #delete-btn": "delete",
             "click #edit-resource-btn": "editResourceEvent",
             "click #extend-bundle-btn": "extendBundleEvent",
             "click #parent-btn": "editParent"
@@ -553,7 +553,7 @@ var MinventarView = Backbone.View.extend({
             if (this.isTypeMode) {
                 console.log("saving type");
                 var resourceType = {};
-                resourceType.name = $(event.target).find("#input-name").val();
+                resourceType.name = $(event.target).parents("#update-form").find("#input-name").val();
                 var id = $(".actions-bar").attr("id");
                 console.log(id);
                 console.log(JSON.stringify(resourceType));
@@ -565,7 +565,7 @@ var MinventarView = Backbone.View.extend({
                         that.resourceTypes.fetch().always(function () {
                             success: that.showTypes(that.resourceTypes.models)
                         });
-                        $("#creation-dialog").html('<div class="alert alert-success alert-dismissible col-sm-6" role="alert">    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Resource type successfully changed</div>');
+                        $("#creation-dialog").html('<div class="alert alert-success alert-dismissible col-sm-6" role="alert">    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Resource type successfully modified</div>');
                     },
                     error: function () {
                         $("#creation-dialog").html('<div class="alert alert-danger alert-dismissible col-sm-6" role="alert">    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Error while changing resource type</div>');
@@ -576,10 +576,10 @@ var MinventarView = Backbone.View.extend({
                 console.log("saving resource");
 
                 var resource = {};
-                resource.name = $(event.target).find("#input-name").val();
+                resource.name = $(event.target).parents("#update-form").find("#input-name").val();
                 var id = $(".actions-bar").attr("id");
                 //FIXME potential bug because the index of the select could change better write the mongoID in the option element and retrieve it here
-                resource.type = this.resourceTypes.models[($(event.target).find(":selected").index()) - 1].get("id");
+                resource.type = this.resourceTypes.models[($(event.target).parents("#update-form").find(":selected").index()) - 1].get("id");
                 var attributes = [];
 
                 $(".attr-definition").each(function () {
@@ -610,7 +610,7 @@ var MinventarView = Backbone.View.extend({
                         that.resources.fetch().always(function () {
                             success: that.showResources(that.resources.models)
                         });
-                        $("#creation-dialog").html('<div class="alert alert-success alert-dismissible col-sm-6" role="alert">    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Resource successfully changed</div>');
+                        $("#creation-dialog").html('<div class="alert alert-success alert-dismissible col-sm-6" role="alert">    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Resource successfully modified</div>');
 
                     },
                     error: function () {
@@ -680,8 +680,6 @@ var MinventarView = Backbone.View.extend({
         },
 
         editParent: function (event) {
-
-
             var id = $(".actions-bar").attr("id");
             this.editResource(this.getParentResource(id).get("id"));
             console.log(this.getParentResource(id).get("id"));

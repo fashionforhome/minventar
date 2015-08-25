@@ -13,13 +13,37 @@
     <script src="/vendor/twbs/bootstrap/dist/js/bootstrap.js"></script>
     <script src="/vendor/components/handlebars.js/handlebars.js"></script>
 
+    <link rel="stylesheet" href="/vendor/maxazan/jquery-treegrid/css/jquery.treegrid.css">
+    <script src="/vendor/maxazan/jquery-treegrid/js/jquery.treegrid.js"></script>
+
+
     <script src="/js/models/minventarModels.js"></script>
     <script src="/js/views/minventarView.js"></script>
     <script src="/js/app.js"></script>
 </head>
 <body>
 
+
 <div id="minventar" class="container-fluid">
+    <!--test-->
+    <table class="tree table table-bordered table-hover">
+        <tr class="treegrid-1">
+            <td>Root node</td>
+            <td>Additional info</td>
+        </tr>
+        <tr class="treegrid-2 treegrid-parent-1">
+            <td>Node 1-1</td>
+            <td>Additional info</td>
+        </tr>
+        <tr class="treegrid-xx treegrid-parent-1">
+            <td>Node 1-2</td>
+            <td>Additional info</td>
+        </tr>
+        <tr class="treegrid-4 treegrid-parent-xx">
+            <td>Node 1-2-1</td>
+            <td>Additional info</td>
+        </tr>
+    </table>
 
     <h1 id="heading">Resources</h1>
 

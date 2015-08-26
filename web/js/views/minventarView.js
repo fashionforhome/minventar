@@ -230,7 +230,7 @@ var MinventarView = Backbone.View.extend({
 // showing / hiding "add resource to bundle dialog"
             if (resourceType.get("is_bundle")) {
                 $("#add-resource-dialog").css("visibility", "visible");
-                var availableResources = this.getAvailableResources();
+                var availableResources = this.getAvailableResources(this.resources.models);
                 var availableResourcesHtml = '<option value="default-resource-selection" disabled="disabled" selected="selected">Available resources</option>';
                 console.log(availableResources.length);
                 for (var i = 0; i < availableResources.length; i++) {
@@ -244,9 +244,8 @@ var MinventarView = Backbone.View.extend({
                 $("#add-resource-dialog").css("visibility", "hidden");
             }
 
-        }, getAvailableResources: function () {
+        }, getAvailableResources: function (resources) {
             var unusedResources = [];
-            var resources = this.resources.models;
 
             for (var i = 0; i < resources.length; i++) {
 
@@ -435,8 +434,10 @@ var MinventarView = Backbone.View.extend({
             $.get("../templates/resourcesDataTableTemplate.html", function (data) {
                 var dataTableCompiled = Handlebars.compile(data, {noEscape: true});
                 var dataHtml = '';
-                for (var i = 0; i < resources.length; i++) {
-                    var resource = resources[i];
+                var sortedResources = that.getResourcesHierarchicallySorted(resources);
+                //var sortedResources = resources;
+                for (var i = 0; i < sortedResources.length; i++) {
+                    var resource = sortedResources[i];
                     var type = that.resourceTypes.findWhere({id: resource.get('type')});
 //TODO Methode zum sortieren der zeilen schreiben (available resources rekursiv nacheinander)
                     var parent = that.getParentResource(resource.get("id"));
@@ -690,6 +691,31 @@ var MinventarView = Backbone.View.extend({
             var id = $(".actions-bar").attr("id");
             this.editResource(this.getParentResource(id).get("id"));
             console.log(this.getParentResource(id).get("id"));
+        },
+        getResourcesHierarchicallySorted: function (resources) {
+            var result = [];
+            var availableResources = this.getAvailableResources(resources);
+            this.getResourcesHierarchicallySortedRecursive(availableResources, result);
+            return result;
+        },
+
+        getResourcesHierarchicallySortedRecursive: function (resources, result) {
+            for (var i = 0; i < resources.length; i++) {
+                var resource = resources[i];
+                result.push(resource);
+                console.log(resource.get("name"));
+                if (resource.get("resources").length > 0) {
+
+                    var currentChildren =
+                        this.resources.filter(function (model) {
+                            return $.inArray(model.get("id"), resource.get("resources")) != -1;
+                        });
+                    console.log(currentChildren.length);
+                    this.getResourcesHierarchicallySortedRecursive(currentChildren, result);
+                } else {
+                    console.log("truei");
+                }
+            }
         }
     }
-);
+)

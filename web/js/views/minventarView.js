@@ -164,9 +164,8 @@ var MinventarView = Backbone.View.extend({
                 var attrTypeHtml = "<option>String</option>";
                 attrTypeHtml = attrTypeHtml.replace(new RegExp("(<option)(>" + attributeType + ")", 'i'),
                     "$1 selected$2"
-                )
-                ;
-                var context = {attrvalue: attributeName, attrtype: attrTypeHtml.toString()};
+                );
+                var context = {attrvalue: "'" + attributeName + "'", attrtype: attrTypeHtml.toString()};
                 $("#input-attributes").append(attributeTemplateCompiled(context).toString());
             });
             $(event.target).closest("#add-attr-dialog").find("#new-attr-name").val("");

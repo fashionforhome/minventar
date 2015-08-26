@@ -1,13 +1,33 @@
 /**
  * Created by Daniel Schulz on 21.08.2015.
+ *
+ * The Backbone view for the Minventar.
  */
 var MinventarView = Backbone.View.extend({
 
+        /**
+         * All resource types
+         */
         resourceTypes: {},
+
+        /**
+         * All resources
+         */
         resources: {},
+
+        /**
+         * True if this view is in type mode, false if it is in resource mode
+         */
         isTypeMode: false,
+
+        /**
+         * True if the dialog for creating or editing a resource is open
+         */
         isCreationDialogOpen: false,
 
+        /**
+         * Object containing all the events this view liestens to
+         */
         events: {
             "click #creation-button": "showCreationDialog",
             "click #resources-types-radio": "switchToTypeMode",
@@ -16,7 +36,7 @@ var MinventarView = Backbone.View.extend({
             "submit #creation-form": "create",
             "click #cancel-btn": "cancelCreation",
             "click #add-attr": "addAttributeToCreation",
-            "click #rmv-attr": "removeAttributeToCreation",
+            "click #rmv-attr": "removeAttributeFromCreation",
             "change #input-type": "definedType",
             "click #add-resource": "addResourceToBundle",
             "click #rmv-resource": "removeResourceFromBundle",
@@ -27,11 +47,12 @@ var MinventarView = Backbone.View.extend({
             "click #save-btn": "save",
             "click  #delete-btn": "delete",
             "click #edit-resource-btn": "editResourceEvent",
-            "click #extend-bundle-btn": "extendBundleEvent",
             "click #parent-btn": "editParent"
-        }
-        ,
+        },
 
+        /**
+         * Initializes this view setting it to resource mode.
+         */
         initialize: function () {
             console.log("initializing minventar");
             this.resourceTypes = new ResourceTypes();
@@ -42,11 +63,14 @@ var MinventarView = Backbone.View.extend({
 
             this.showResourceFilter();
             this.showResources(this.resources.models);
-        }
-        ,
-        render: function () {
-
+            // for firefox compatibility
+            $("#resources-radio").prop('checked', true);
         },
+
+        /**
+         * Renders the heading, the filter and the table for working with types.
+         * @param event
+         */
         switchToTypeMode: function (event) {
             if (!this.isTypeMode) {
                 $("#creation-button").html("Create resource type");
@@ -55,7 +79,13 @@ var MinventarView = Backbone.View.extend({
                 this.showTypes(this.resourceTypes.models);
                 this.isTypeMode = true;
             }
-        }, switchToResourceMode: function (event) {
+        },
+
+        /**
+         * Renders the heading, the filter and the table for working with types.
+         * @param event
+         */
+        switchToResourceMode: function (event) {
             if (this.isTypeMode) {
                 $("#creation-button").html("Create resource");
                 $("#heading").text("Resources");
@@ -64,6 +94,11 @@ var MinventarView = Backbone.View.extend({
                 this.isTypeMode = false;
             }
         },
+
+        /**
+         * Shows the creation dialog between the control bar and the filter.
+         * @param event
+         */
         showCreationDialog: function (event) {
             if (this.isTypeMode) {
                 this.showTypeCreationDialog();
@@ -72,6 +107,11 @@ var MinventarView = Backbone.View.extend({
             }
             console.log("starting creation process");
         },
+
+        /**
+         * Shows the type creation dialog between the control bar and the filter.
+         * @param event
+         */
         showTypeCreationDialog: function () {
             $.get("../templates/typeCreationDialogTemplate.html", function (data) {
                 var creationDialogTemplateCompiled = Handlebars.compile(data);
@@ -79,6 +119,11 @@ var MinventarView = Backbone.View.extend({
             });
             this.isCreationDialogOpen = true;
         },
+
+        /**
+         * Shows the resource creation dialog between the control bar and the filter.
+         * @param event
+         */
         showResourceCreationDialog: function () {
             var that = this;
             $.get("../templates/resourceCreationDialogTemplate.html", function (data) {
@@ -95,13 +140,21 @@ var MinventarView = Backbone.View.extend({
             });
             this.isCreationDialogOpen = true;
         },
+
+        /**
+         * Removes the creation dialog.
+         * @param event
+         */
         cancelCreation: function (event) {
             console.log("cancelling creation");
             this.isCreationDialogOpen = false;
             $("#creation-dialog").empty();
-        }
+        },
 
-        ,
+        /**
+         * Adds an attribute to a resource types creation dialog.
+         * @param event
+         */
         addAttributeToCreation: function (event) {
             console.log("adding attribute");
             var attributeName = $(event.target).closest("#add-attr-dialog").find("#new-attr-name").val();
@@ -118,13 +171,21 @@ var MinventarView = Backbone.View.extend({
             });
             $(event.target).closest("#add-attr-dialog").find("#new-attr-name").val("");
             $(event.target).closest("#add-attr-dialog").find("#new-attr-type").val("String");
-        }
-        ,
-        removeAttributeToCreation: function (event) {
+        },
+
+        /**
+         * Removes an attribute from a resource types creation dialog.
+         * @param event
+         */
+        removeAttributeFromCreation: function (event) {
             console.log("removing attribute");
             $(event.target).closest(".attr-definition").remove();
-        }
-        ,
+        },
+
+        /**
+         * Creates a new resource / type using the backend service of the Minventar.
+         * @param event
+         */
         create: function (event) {
             event.preventDefault();
             var that = this;
@@ -209,8 +270,12 @@ var MinventarView = Backbone.View.extend({
             }
         },
 
+        /**
+         * Triggers when the user has chosen a type for his new resource.
+         * Makes input fields for the attributes of the chosen type visible and if its a bundle type makes a dialog visible to alter the contents of the bundle.
+         * @param event
+         */
         definedType: function (event, after) {
-            console.log("first");
             $("#input-resource-attributes").empty();
             var resourceType = this.resourceTypes.models[($("#input-type").find(":selected").index()) - 1];
             var attributes = resourceType.get("attributes");
@@ -227,34 +292,42 @@ var MinventarView = Backbone.View.extend({
                 }
                 ;
             });
-// showing / hiding "add resource to bundle dialog"
+            // showing / hiding "add resource to bundle dialog"
             if (resourceType.get("is_bundle")) {
                 $("#add-resource-dialog").css("visibility", "visible");
-                var availableResources = this.getAvailableResources(this.resources.models);
+                var availableResources = this.getAvailableResources();
+                var idDefined = $(".actions-bar").attr("id");
+                var parents = (idDefined ? this.getParentResources(idDefined) : []);
                 var availableResourcesHtml = '<option value="default-resource-selection" disabled="disabled" selected="selected">Available resources</option>';
-                console.log(availableResources.length);
                 for (var i = 0; i < availableResources.length; i++) {
                     var resource = availableResources[i];
-                    console.log(resource.get("name"));
-                    availableResourcesHtml = availableResourcesHtml + "<option id='" + resource.get("id") + "'>" + resource.get("name") + "</option>";
+                    //resources only count as available if they do not contain the current bundle or are the bundle itself
+                    if (!($.inArray(resource, parents) != -1) && idDefined != resource.get("id")) {
+                        availableResourcesHtml = availableResourcesHtml + "<option id='" + resource.get("id") + "'>" + resource.get("name") + "</option>";
+                    }
                 }
 
                 $("#new-resource").html(availableResourcesHtml);
             } else {
                 $("#add-resource-dialog").css("visibility", "hidden");
             }
+        },
 
-        }, getAvailableResources: function (resources) {
-            var unusedResources = [];
+        /**
+         * Helper method which finds and returns all available (unused) resources.
+         * @returns {Array}
+         */
+        getAvailableResources: function () {
+            var availableResources = [];
 
-            for (var i = 0; i < resources.length; i++) {
+            for (var i = 0; i < this.resources.models.length; i++) {
 
-                var resource = resources[i];
+                var resource = this.resources.models[i];
                 var inBundle = false;
-                for (var j = 0; j < resources.length; j++) {
+                for (var j = 0; j < this.resources.models.length; j++) {
 
-                    if (resources[j].get("resources")) {
-                        if ($.inArray(resource.get("id"), resources[j].get("resources")) != -1) {
+                    if (this.resources.models[j].get("resources")) {
+                        if ($.inArray(resource.get("id"), this.resources.models[j].get("resources")) != -1) {
                             inBundle = true;
                             break;
                         }
@@ -262,12 +335,18 @@ var MinventarView = Backbone.View.extend({
                 }
                 if (!inBundle) {
 
-                    unusedResources.push(resource);
+                    availableResources.push(resource);
                 }
             }
-            console.log(unusedResources.length);
-            return unusedResources;
-        }, getParentResource: function (resourceID) {
+            return availableResources;
+        },
+
+        /**
+         * Helper method which finds and returns the bundle containing the delivered resource. Returns false if this resource is unused.
+         * @param resourceID
+         * @returns {*}
+         */
+        getDirectParentResource: function (resourceID) {
             var resources = this.resources.models;
 
             for (var i = 0; i < resources.length; i++) {
@@ -281,6 +360,52 @@ var MinventarView = Backbone.View.extend({
             return false;
 
         },
+
+        /**
+         * Returns an array containing the parent, grandparent  etc.
+         * @param resourceID
+         * @returns {Array}
+         */
+        getParentResources: function (resourceID) {
+            var result = [];
+
+            var parent = this.getDirectParentResource(resourceID);
+            while (parent) {
+
+                result.push(parent);
+                parent = this.getDirectParentResource(parent.get("id"));
+            }
+            return result;
+        },
+
+        /**
+         * Returns an array containing the roots (top level bundles) of the delivered resources.
+         * @param resources
+         * @returns {Array}
+         */
+        getResourceRoots: function (resources) {
+            var roots = [];
+
+            for (var i = 0; i < resources.length; i++) {
+                var parents = this.getParentResources(resources[i].get("id"));
+                if (parents.length > 0) {
+                    if (!($.inArray(parents[parents.length - 1], roots) != -1)) {
+                        roots.push(parents[parents.length - 1]);
+                    }
+                } else {
+                    if (!($.inArray(resources[i], roots) != -1)) {
+                        roots.push(resources[i]);
+                    }
+                }
+
+            }
+            return roots;
+        },
+
+        /**
+         *  Adds in the creation dialog a resource to a bundle .
+         * @param event
+         */
         addResourceToBundle: function (event) {
             var resourceName = $("#new-resource option:selected").text();
 
@@ -299,18 +424,29 @@ var MinventarView = Backbone.View.extend({
             }
         },
 
-
+        /**
+         * Removes in the creation dialog a resource to a bundle .
+         * @param event
+         */
         removeResourceFromBundle: function (event) {
             console.log("removing resource from bundle");
             $('#new-resource').append("'<option id='" + $(event.target).closest(".bundled-resource").attr("id") + "'>" + $(event.target).closest(".bundled-resource").find(".content-name").text() + "</option>");
             $(event.target).closest(".bundled-resource").remove();
         },
+
+        /**
+         * Renders the filter bar for resources.
+         */
         showTypeFilter: function () {
             $.get("../templates/typeFilterTemplate.html", function (data) {
                 var filterCompiled = Handlebars.compile(data, {noEscape: true});
                 $("#filter-dialog").html(filterCompiled().toString());
             });
         },
+
+        /**
+         * Renders the filter bar for types.
+         */
         showResourceFilter: function () {
             var that = this;
             $.get("../templates/resourceFilterTemplate.html", function (data) {
@@ -324,6 +460,11 @@ var MinventarView = Backbone.View.extend({
                 $("#filter-dialog").html(filterCompiled(context).toString());
             });
         },
+
+        /**
+         *  Filters the contents of the table by the declared criteria. Filtering by name is implemented as a non case sensetive contains.
+         * @param event
+         */
         filter: function (event) {
             event.preventDefault();
             var that = this;
@@ -361,6 +502,7 @@ var MinventarView = Backbone.View.extend({
                 console.log(matchedTypes.length);
                 this.showTypes(matchedTypes);
             } else {
+
                 var matchedResources = this.resources.filter(function (model) {
                     console.log("filtering");
                     var name = $("#name-filter").val().toLowerCase();
@@ -393,11 +535,15 @@ var MinventarView = Backbone.View.extend({
 
 
                 });
-                console.log(matchedResources.length);
                 this.showResources(matchedResources);
             }
+        },
 
-        }, resetFilter: function (event) {
+        /**
+         * Resets the filter bar.
+         * @param event
+         */
+        resetFilter: function (event) {
             if (this.isTypeMode) {
                 this.showTypeFilter();
                 this.showTypes(this.resourceTypes.models);
@@ -407,6 +553,11 @@ var MinventarView = Backbone.View.extend({
             }
 
         },
+
+        /**
+         * Adds the given types to the table.
+         * @param types
+         */
         showTypes: function (types) {
             console.log("rendering types");
             var that = this;
@@ -417,9 +568,10 @@ var MinventarView = Backbone.View.extend({
                     var type = types[i];
                     dataHtml += '<tr class="data-row" id="' + type.get("id") + '">  <td class="type-name">' + type.get("name");
                     dataHtml += '<div class="pull-right text-right">';
-                    dataHtml += '<button id="edit-type-btn" type="button" class="btn btn-link"><span class="glyphicon glyphicon-edit"></span></button>';
                     dataHtml += (!type.get("is_bundle") ? '<button type="button" class="btn btn-link" style="cursor: default; color: #000000" ><span class="glyphicon glyphicon-file"></span></button>'
-                        : '<button id="extend-bundle-btn" type="button" class="btn btn-link" style="cursor: default;"><span class="glyphicon glyphicon-folder-close"></span></button>');
+                        : '<button id="extend-bundle-btn" type="button" class="btn btn-link" style="cursor: default; color: #000000"><span class="glyphicon glyphicon-folder-close"></span></button>');
+                    dataHtml += '<button id="edit-type-btn" type="button" class="btn btn-link"><span class="glyphicon glyphicon-edit"></span></button>';
+
                     dataHtml += '</div>';
                     dataHtml += "</td> <td>" + that.attributeDefinitionsAsString(type.get("attributes")) + "</td> </tr>";
                 }
@@ -428,6 +580,11 @@ var MinventarView = Backbone.View.extend({
                 $("#data-table").html(dataTableCompiled(context).toString());
             });
         },
+
+        /**
+         * Adds the given resources to the table.
+         * @param types
+         */
         showResources: function (resources) {
             console.log("rendering resources");
             var that = this;
@@ -435,19 +592,19 @@ var MinventarView = Backbone.View.extend({
                 var dataTableCompiled = Handlebars.compile(data, {noEscape: true});
                 var dataHtml = '';
                 var sortedResources = that.getResourcesHierarchicallySorted(resources);
-                //var sortedResources = resources;
+
+
                 for (var i = 0; i < sortedResources.length; i++) {
                     var resource = sortedResources[i];
                     var type = that.resourceTypes.findWhere({id: resource.get('type')});
-//TODO Methode zum sortieren der zeilen schreiben (available resources rekursiv nacheinander)
-                    var parent = that.getParentResource(resource.get("id"));
+                    var parent = that.getDirectParentResource(resource.get("id"));
 
-                    //console.log(type.get('name'));
-                    dataHtml += '<tr class="data-row treegrid-' + resource.get("id") + (!parent ? ' ' : ' treegrid-parent-' + parent.get('id')) + '" id="' + resource.get("id") + '">  <td class="resource-name">' + resource.get("name");
+
+                    dataHtml += '<tr class="data-row treegrid-' + resource.get("id") + (!parent ? ' ' : ' treegrid-parent-' + parent.get('id')) + '" id="' + resource.get("id") + '" ' + ((parent) && i != 0 ? 'style="border-top: hidden"' : "") + '>  <td class="resource-name">' + resource.get("name");
                     dataHtml += '<div class="pull-right text-right">';
-                    dataHtml += '<button id="edit-resource-btn" type="button" class="btn btn-link"><span class="glyphicon glyphicon-edit"></span></button>';
                     dataHtml += (!type.get("is_bundle") ? '<button type="button" class="btn btn-link" style="cursor: default; color: #000000" ><span class="glyphicon glyphicon-file"></span></button>'
-                        : '<button id="extend-bundle-btn" type="button" class="btn btn-link"><span class="glyphicon glyphicon-folder-close"></span></button>');
+                        : '<button id="extend-bundle-btn" type="button" class="btn btn-link" style="cursor: default; color: #000000"><span class="glyphicon glyphicon-folder-close"></span></button>');
+                    dataHtml += '<button id="edit-resource-btn" type="button" class="btn btn-link"><span class="glyphicon glyphicon-edit"></span></button>';
                     dataHtml += '</div>';
                     dataHtml += "</td><td class='type-cell' id ='" + type.get("id") + "'>" + type.get("name") + "</td><td>" + that.attributesAsString(resource.get("attributes")) + "</td> </tr>";
                 }
@@ -456,27 +613,41 @@ var MinventarView = Backbone.View.extend({
                 $("#data-table").html(dataTableCompiled(context).toString());
                 $('.tree').treegrid();
 
-                console.log($("#data-table").html());
-
             });
-        }, attributeDefinitionsAsString: function (attributes) {
+        },
+
+        /**
+         * Helper method which converts the given attribute definitions to a string.
+         * @param attributes
+         * @returns {string}
+         */
+        attributeDefinitionsAsString: function (attributes) {
             var result = "";
             for (var i = 0; i < attributes.length; i++) {
                 var attribute = attributes[i];
-                // result += attribute.name + ": " + attribute.type + (i != attributes.length - 1 ? ", " : "");
                 result += attribute.name + ": " + attribute.type + (i != attributes.length - 1 ? "<br>" : "");
             }
             return result;
-        }, attributesAsString: function (attributes) {
+        },
+
+        /**
+         * Helper method which converts the given attributes to a string.
+         * @param attributes
+         * @returns {string}
+         */
+        attributesAsString: function (attributes) {
             var result = "";
             for (var i = 0; i < attributes.length; i++) {
                 var attribute = attributes[i];
-                // result += attribute.name + ": " + attribute.type + (i != attributes.length - 1 ? ", " : "");
                 result += attribute.name + ": " + attribute.value + (i != attributes.length - 1 ? "<br>" : "");
             }
             return result;
         },
 
+        /**
+         * Shows the creation dialog for an existing resource.
+         * @param id
+         */
         editResource: function (id) {
             var that = this;
             $.get("../templates/resourceUpdateDialogTemplate.html", function (data) {
@@ -501,7 +672,7 @@ var MinventarView = Backbone.View.extend({
                 $("#creation-dialog").html(updateDialogTemplateCompiled(context));
                 $("#creation-dialog").closest(".actions-bar").attr("id", id);
 
-                var parentResource = that.getParentResource(id);
+                var parentResource = that.getDirectParentResource(id);
 
                 if (parentResource) {
                     $("#parent-btn").css("visibility", "visible");
@@ -523,7 +694,6 @@ var MinventarView = Backbone.View.extend({
 
                     var innerResource = innerResources[i];
                     var innerResourceName = that.resources.findWhere({id: innerResource}).get("name");
-                    console.log(innerResourceName);
 
                     var addedResourceHtml = '<div class="row bundled-resource" id="' + innerResource + '"><label  class="content-name control-label col-sm-3">';
                     addedResourceHtml = addedResourceHtml + innerResourceName + '</label><div class="col-sm-1"><button id="rmv-resource" type="button" class="btn btn-link"><span class="glyphicon glyphicon-minus"style="color:red"></span></button></div></div>';
@@ -536,6 +706,10 @@ var MinventarView = Backbone.View.extend({
             });
             this.isCreationDialogOpen = true;
         },
+
+        /**
+         * Shows the creation dialog for an existing resource.
+         */
         editResourceEvent: function (event) {
             console.log("editing resource");
             var id = $(event.target).parents(".data-row").attr("id");
@@ -543,6 +717,10 @@ var MinventarView = Backbone.View.extend({
             this.editResource(id);
 
         },
+
+        /**
+         * Shows the creation dialog for an existing type.
+         */
         editType: function (event) {
             console.log("editing type");
             $.get("../templates/typeUpdateDialogTemplate.html", function (data) {
@@ -555,6 +733,11 @@ var MinventarView = Backbone.View.extend({
             });
             this.isCreationDialogOpen = true;
         },
+
+        /**
+         * Saves a resource/type using the backend service of the Minventar.
+         * @param id
+         */
         save: function (event) {
             event.preventDefault();
             var that = this;
@@ -628,7 +811,13 @@ var MinventarView = Backbone.View.extend({
                 });
                 this.isCreationDialogOpen = false;
             }
-        }, delete: function (event) {
+        },
+
+        /**
+         * Deletes a resource/type using the backend service of the Minventar.
+         * @param id
+         */
+        delete: function (event) {
             event.preventDefault();
             var that = this;
             if (this.isTypeMode) {
@@ -676,44 +865,46 @@ var MinventarView = Backbone.View.extend({
                 });
                 this.isCreationDialogOpen = false;
             }
-        }, extendBundle: function (bundleID) {
-            console.log("extending bundle: ", bundleID);
         },
 
-        extendBundleEvent: function (event) {
-            if (!this.isTypeMode) {
-                var bundleID = $(event.target).parents(".data-row").attr("id");
-                this.extendBundle(bundleID);
-            }
-        },
-
+        /**
+         * Shows the creation dialog for the parent of the currently edited resource
+         * @param event
+         */
         editParent: function (event) {
             var id = $(".actions-bar").attr("id");
-            this.editResource(this.getParentResource(id).get("id"));
-            console.log(this.getParentResource(id).get("id"));
+            this.editResource(this.getDirectParentResource(id).get("id"));
+            console.log(this.getDirectParentResource(id).get("id"));
         },
+
+        /**
+         * Helper method which returns the given resources sorted in a way that they can be hierarchically displayed.
+         * @param resources
+         * @returns {Array}
+         */
         getResourcesHierarchicallySorted: function (resources) {
             var result = [];
-            var availableResources = this.getAvailableResources(resources);
+            var availableResources = this.getResourceRoots(resources);
             this.getResourcesHierarchicallySortedRecursive(availableResources, result);
             return result;
         },
 
+        /**
+         * Helper method which returns the given resources sorted in a way that they can be hierarchically displayed.
+         * @param resources
+         * @returns {Array}
+         */
         getResourcesHierarchicallySortedRecursive: function (resources, result) {
             for (var i = 0; i < resources.length; i++) {
                 var resource = resources[i];
                 result.push(resource);
-                console.log(resource.get("name"));
                 if (resource.get("resources").length > 0) {
 
                     var currentChildren =
                         this.resources.filter(function (model) {
                             return $.inArray(model.get("id"), resource.get("resources")) != -1;
                         });
-                    console.log(currentChildren.length);
                     this.getResourcesHierarchicallySortedRecursive(currentChildren, result);
-                } else {
-                    console.log("truei");
                 }
             }
         }

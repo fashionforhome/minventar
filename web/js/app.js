@@ -3,6 +3,8 @@
  */
 /**
  * Created by Daniel Schulz on 18.08.2015.
+ *
+ * Initializes the MinventarView.
  */
 $(document).ready(function () {
     var minventarView = new MinventarView({el: $("#minventar")});

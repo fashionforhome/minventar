@@ -1,5 +1,11 @@
 /**
  * Created by Daniel Schulz on 21.08.2015.
+ *
+ * Contains all Backbone Models of the Minventar.
+ */
+
+/**
+ * Model containing a single resource type.
  */
 var ResourceType = Backbone.Model.extend({
     urlRoot: "minventar/api/resource_types",
@@ -11,6 +17,9 @@ var ResourceType = Backbone.Model.extend({
     }
 });
 
+/**
+ * Collection containing multiple resource types.
+ */
 var ResourceTypes = Backbone.Collection.extend({
     model: ResourceType,
     url: "minventar/api/resource_types",
@@ -33,6 +42,9 @@ var ResourceTypes = Backbone.Collection.extend({
     }
 });
 
+/**
+ * Model containing a single resource.
+ */
 var Resource = Backbone.Model.extend({
     urlRoot: "minventar/api/resources",
     id: "",
@@ -44,6 +56,9 @@ var Resource = Backbone.Model.extend({
     }
 });
 
+/**
+ * Collection containing multiple resources
+ */
 var Resources = Backbone.Collection.extend({
     model: Resource,
     url: "minventar/api/resources",

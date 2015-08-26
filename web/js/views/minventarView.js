@@ -55,14 +55,18 @@ var MinventarView = Backbone.View.extend({
          */
         initialize: function () {
             console.log("initializing minventar");
-            this.resourceTypes = new ResourceTypes();
-            this.resourceTypes.fetch();
-            this.resources = new Resources();
-            this.resources.fetch();
 
+            var that = this;
+
+            this.resourceTypes = new ResourceTypes();
+            this.resources = new Resources();
+            this.resourceTypes.fetch().always(function () {
+                success:  that.resources.fetch().always(function () {
+                    success:  that.showResources(that.resources.models);
+                });
+            });
 
             this.showResourceFilter();
-            this.showResources(this.resources.models);
             // for firefox compatibility
             $("#resources-radio").prop('checked', true);
         },

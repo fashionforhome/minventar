@@ -33,7 +33,8 @@ var MinventarView = Backbone.View.extend({
             "click #resources-types-radio": "switchToTypeMode",
             "click #resources-radio": "switchToResourceMode",
 
-            "submit #creation-form": "create",
+            "submit #type-creation-form": "createType",
+            "submit #resource-creation-form": "createResource",
             "click #cancel-btn": "cancelCreation",
             "click #add-attr": "addAttributeToCreation",
             "click #rmv-attr": "removeAttributeFromCreation",
@@ -186,91 +187,96 @@ var MinventarView = Backbone.View.extend({
         },
 
         /**
-         * Creates a new resource / type using the backend service of the Minventar.
+         * Creates a new type using the backend service of the Minventar.
          * @param event
          */
-        create: function (event) {
+        createType: function (event) {
             event.preventDefault();
             var that = this;
-            if (this.isTypeMode) {
-                console.log("saving type");
-                var newResourceType = {};
-                newResourceType.name = $(event.target).find("#input-name").val();
-                newResourceType.is_bundle = $(event.target).find("#input-is-bundle").is(':checked');
-                var attributes = [];
+            console.log("saving type");
+            var newResourceType = {};
+            newResourceType.name = $(event.target).find("#input-name").val();
+            newResourceType.is_bundle = $(event.target).find("#input-is-bundle").is(':checked');
+            var attributes = [];
 
-                $(".attr-definition").each(function () {
-                    var attribute = {};
-                    attribute.name = $(this).find("#attr-name").val();
-                    attribute.type = $(this).find("#attr-type option:selected").text();
-                    attributes.push(attribute);
-                });
-                newResourceType.attributes = attributes;
-                console.log(JSON.stringify(newResourceType));
-                $.ajax({
-                    type: "POST",
-                    url: "minventar/api/resource_types",
-                    data: JSON.stringify(newResourceType),
-                    success: function () {
-                        that.resourceTypes.fetch().always(function () {
-                            success: that.showTypes(that.resourceTypes.models)
-                        });
-                        $("#creation-dialog").html('<div class="alert alert-success alert-dismissible col-sm-6" role="alert">    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Resource type successfully created</div>');
+            $(".attr-definition").each(function () {
+                var attribute = {};
+                attribute.name = $(this).find("#attr-name").val();
+                attribute.type = $(this).find("#attr-type option:selected").text();
+                attributes.push(attribute);
+            });
+            newResourceType.attributes = attributes;
+            console.log(JSON.stringify(newResourceType));
+            $.ajax({
+                type: "POST",
+                url: "minventar/api/resource_types",
+                data: JSON.stringify(newResourceType),
+                success: function () {
+                    that.resourceTypes.fetch().always(function () {
+                        success: if(that.isTypeMode){that.showTypes(that.resourceTypes.models)}
+                    });
+                    $("#creation-dialog").html('<div class="alert alert-success alert-dismissible col-sm-6" role="alert">    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Resource type successfully created</div>');
 
-                    },
-                    error: function () {
-                        $("#creation-dialog").html('<div class="alert alert-danger alert-dismissible col-sm-6" role="alert">    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Error while creating resource type</div>');
+                },
+                error: function () {
+                    $("#creation-dialog").html('<div class="alert alert-danger alert-dismissible col-sm-6" role="alert">    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Error while creating resource type</div>');
 
-                    }
-                });
-                this.isCreationDialogOpen = false;
-            } else {
-                console.log("saving resource");
-                var newResource = {};
-                newResource.name = $(event.target).find("#input-name").val();
-                //FIXME potential bug because the index of the select could change better write the mongoID in the option element and retrieve it here
-                newResource.type = this.resourceTypes.models[($(event.target).find(":selected").index()) - 1].get("id");
-                var attributes = [];
+                }
+            });
+            this.isCreationDialogOpen = false;
+        },
+        /**
+         * Creates a new resource using the backend service of the Minventar.
+         * @param event
+         */
+        createResource: function (event) {
+            event.preventDefault();
+            var that = this;
+            console.log("saving resource");
+            var newResource = {};
+            newResource.name = $(event.target).find("#input-name").val();
+            //FIXME potential bug because the index of the select could change better write the mongoID in the option element and retrieve it here
+            newResource.type = this.resourceTypes.models[($(event.target).find(":selected").index()) - 1].get("id");
+            var attributes = [];
 
-                $(".attr-definition").each(function () {
-                    var attribute = {};
-                    attribute.name = $(this).find("#attr-name-label").text();
-                    // remove the trailing colon
-                    attribute.name = attribute.name.substring(0, attribute.name.length - 1);
-                    attribute.value = $(this).find("#input-name").val();
-                    attributes.push(attribute);
-                });
-                newResource.attributes = attributes;
+            $(".attr-definition").each(function () {
+                var attribute = {};
+                attribute.name = $(this).find("#attr-name-label").text();
+                // remove the trailing colon
+                attribute.name = attribute.name.substring(0, attribute.name.length - 1);
+                attribute.value = $(this).find("#input-name").val();
+                attributes.push(attribute);
+            });
+            newResource.attributes = attributes;
 
-                var innerResources = [];
+            var innerResources = [];
 
-                $(".bundled-resource").each(function () {
-                    var innerResource = $(this).attr("id");
-                    innerResources.push(innerResource);
-                });
-                newResource.resources = innerResources;
+            $(".bundled-resource").each(function () {
+                var innerResource = $(this).attr("id");
+                innerResources.push(innerResource);
+            });
+            newResource.resources = innerResources;
 
-                console.log(JSON.stringify(newResource));
+            console.log(JSON.stringify(newResource));
 
-                $.ajax({
-                    type: "POST",
-                    url: "minventar/api/resources",
-                    data: JSON.stringify(newResource),
-                    success: function () {
-                        that.resources.fetch().always(function () {
-                            success: that.showResources(that.resources.models)
-                        });
-                        $("#creation-dialog").html('<div class="alert alert-success alert-dismissible col-sm-6" role="alert">    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Resource successfully created</div>');
+            $.ajax({
+                type: "POST",
+                url: "minventar/api/resources",
+                data: JSON.stringify(newResource),
+                success: function () {
+                    that.resources.fetch().always(function () {
+                        success: if(!that.isTypeMode){that.showResources(that.resources.models)}
+                    });
+                    $("#creation-dialog").html('<div class="alert alert-success alert-dismissible col-sm-6" role="alert">    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Resource successfully created</div>');
 
-                    },
-                    error: function () {
-                        $("#creation-dialog").html('<div class="alert alert-danger alert-dismissible col-sm-6" role="alert">    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Error while creating resource</div>');
+                },
+                error: function () {
+                    $("#creation-dialog").html('<div class="alert alert-danger alert-dismissible col-sm-6" role="alert">    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Error while creating resource</div>');
 
-                    }
-                });
-                this.isCreationDialogOpen = false;
+                }
+            });
+            this.isCreationDialogOpen = false;
 
-            }
         },
 
         /**

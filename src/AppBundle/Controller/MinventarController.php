@@ -38,6 +38,12 @@ class MinventarController extends Controller
      */
     public function init()
     {
+        //create the mongo collections if they don't exist already
+        $mongoClient = new \MongoClient($this->container->getParameter('mongo_connection_string'));
+        $mongoClient->selectDB($this->container->getParameter('mongo_database_name'))->createCollection("resource");
+        $mongoClient->selectDB($this->container->getParameter('mongo_database_name'))->createCollection("resource_type");
+
+
         $metadataFactory = new Mapping\MetadataFactory();
         $cache = new FilesystemCache($this->get('kernel')->getRootDir() . "/Resources/mongocache");
         $this->mandango = new Mandango($metadataFactory, $cache);

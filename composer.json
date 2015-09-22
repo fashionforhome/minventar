@@ -23,12 +23,7 @@
     "sensio/framework-extra-bundle": "~3.0,>=3.0.2",
     "incenteev/composer-parameter-handler": "~2.0",
     "mandango/mandango": "1.0.*@dev",
-    "mandango/mondator": "1.0.*@dev",
-    "twbs/bootstrap": "3.3.*",
-    "components/backbone": "1.2.*",
-    "components/jquery": "2.1.*",
-    "components/handlebars.js": "3.0.*",
-    "maxazan/jquery-treegrid": "0.3.0"
+    "mandango/mondator": "1.0.*@dev"
   },
   "require-dev": {
     "sensio/generator-bundle": "~2.3"
@@ -58,7 +53,7 @@
   },
   "config": {
     "bin-dir": "bin",
-    "vendor-dir": "web/vendor"
+    "vendor-dir": "vendor"
   },
   "extra": {
     "symfony-app-dir": "app",

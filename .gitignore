@@ -11,5 +11,5 @@
 /bin/
 /composer.phar
 /app/Resources/mongocache/*
-/web/vendor/
+/web/node_modules/
 /components/

@@ -1,0 +1,12 @@
+{
+  "name": "Minventar",
+  "version": "0.1.0",
+  "license" : "GPL-3.0",
+  "dependencies": {
+    "bootstrap": "~3.3.4",
+    "backbone": "~1.1.2",
+    "jquery": "~2.1.3",
+    "handlebars": "~3.0.1",
+    "jquery-treegrid": "~0.3.0"
+  }
+}

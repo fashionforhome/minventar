@@ -1,6 +1,6 @@
 {
-  "name": "symfony/framework-standard-edition",
-  "license": "MIT",
+  "name": "fashionforhome/minventar",
+  "license": "GPL-3.0",
   "type": "project",
   "description": "The \"Symfony Standard Edition\" distribution",
   "autoload": {

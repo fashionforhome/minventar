@@ -1,4 +1,25 @@
 <?php
+
+/**
+ * This file is part of Minventar.
+ *
+ * @category inventory software
+ * @package Minventar_Service
+ *
+ * @author Daniel Schulz <daniel.schulz@fashion4home.de>
+ *
+ * @copyright (c) 2015 by fashion4home GmbH <www.fashionforhome.de>
+ * @license GPL-3.0
+ * @license http://opensource.org/licenses/GPL-3.0 GNU GENERAL PUBLIC LICENSE
+ *
+ * @version 0.1.0
+ *
+ * Date: 22.09.2015
+ * Time: 14:10
+ */
+
+// this script can be used to generate new mappings for mandango
+
 echo $_SERVER['DOCUMENT_ROOT'] . "/vendor/autoload.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/vendor/autoload.php";
 

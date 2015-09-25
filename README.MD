@@ -1,7 +1,7 @@
 Minventar
 ========================
 
-<a href='https://www.versioneye.com/user/projects/56055e7def9c15000b000014'><img src='https://www.versioneye.com/user/projects/56055e7def9c15000b000014/badge.svg?style=flat' alt="Dependency Status" /></a>
+<a href='https://www.versioneye.com/user/projects/5605663fef9c150009000127'><img src='https://www.versioneye.com/user/projects/5605663fef9c150009000127/badge.svg?style=flat' alt="Dependency Status" /></a>
 
 Minventar is a minimalistic in-browser inventory management solution. It is meant as a generic resource management, to allow you to define and manage any types of resources (e.g. IT inventory).
 

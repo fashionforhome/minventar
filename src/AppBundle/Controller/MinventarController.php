@@ -33,7 +33,8 @@ use Mandango\Cache\FilesystemCache;
 use Mandango\Connection;
 use Mandango\Mandango;
 use Model\Mapping as Mapping;
-
+use MongoClient;
+use MongoId;
 
 /**
  * Class MinventarController
@@ -50,17 +51,15 @@ class MinventarController extends Controller
      */
     private $mandango;
 
-
     /**
      * Initializes the Mandango object.
      */
     public function init()
     {
         //create the mongo collections if they don't exist already
-        $mongoClient = new \MongoClient($this->container->getParameter('mongo_connection_string'));
+        $mongoClient = new MongoClient($this->container->getParameter('mongo_connection_string'));
         $mongoClient->selectDB($this->container->getParameter('mongo_database_name'))->createCollection("resource");
         $mongoClient->selectDB($this->container->getParameter('mongo_database_name'))->createCollection("resource_type");
-
 
         $metadataFactory = new Mapping\MetadataFactory();
         $cache = new FilesystemCache($this->get('kernel')->getRootDir() . "/Resources/mongocache");
@@ -124,7 +123,7 @@ class MinventarController extends Controller
         $resourceRepository = $this->mandango->getRepository('Model\Resource');
 
         $criteria = array();
-        $criteria['resources'] = new \MongoId($id);
+        $criteria['resources'] = new MongoId($id);
 
         $bundles = $resourceRepository->createQuery()->criteria($criteria)->all();
 
@@ -161,7 +160,7 @@ class MinventarController extends Controller
         $resourceRepository = $this->mandango->getRepository('Model\Resource');
 
         $criteria = array();
-        $criteria['type'] = new \MongoId($id);
+        $criteria['type'] = new MongoId($id);
 
         $resources = $resourceRepository->createQuery()->criteria($criteria)->all();
 
@@ -282,9 +281,9 @@ class MinventarController extends Controller
     {
         $this->init();
         $resourceRepository = $this->mandango->getRepository('Model\Resource');
-        $bundleDoc = $resourceRepository->findOneById(new \MongoId($bundle));
+        $bundleDoc = $resourceRepository->findOneById(new MongoId($bundle));
         $resources = $bundleDoc->getResources();
-        $resources->add($resourceRepository->findOneById(new \MongoId($resource)));
+        $resources->add($resourceRepository->findOneById(new MongoId($resource)));
         $bundleDoc->save();
         return new JsonResponse($bundleDoc->toArray());
 
@@ -299,9 +298,9 @@ class MinventarController extends Controller
     {
         $this->init();
         $resourceRepository = $this->mandango->getRepository('Model\Resource');
-        $bundleDoc = $resourceRepository->findOneById(new \MongoId($bundle));
+        $bundleDoc = $resourceRepository->findOneById(new MongoId($bundle));
         $resources = $bundleDoc->getResources();
-        $resources->remove($resourceRepository->findOneById(new \MongoId($resource)));
+        $resources->remove($resourceRepository->findOneById(new MongoId($resource)));
         $bundleDoc->save();
         return new JsonResponse($bundleDoc->toArray());
     }
@@ -319,7 +318,7 @@ class MinventarController extends Controller
         $resourcesRepository = $this->mandango->getRepository('Model\Resource');
 
 
-        $resource = $resourcesRepository->findOneById(new \MongoId($id));
+        $resource = $resourcesRepository->findOneById(new MongoId($id));
 
         $name = $input['name'];
 
@@ -357,7 +356,7 @@ class MinventarController extends Controller
         $resourcesRepository = $this->mandango->getRepository('Model\Resource');
 
 
-        $resource = $resourcesRepository->findOneById(new \MongoId($id));
+        $resource = $resourcesRepository->findOneById(new MongoId($id));
         return new JsonResponse($resource->toArray());
     }
 
@@ -374,7 +373,7 @@ class MinventarController extends Controller
         $resourceTypeRepository = $this->mandango->getRepository('Model\ResourceType');
 
 
-        $resourceType = $resourceTypeRepository->findOneById(new \MongoId($id));
+        $resourceType = $resourceTypeRepository->findOneById(new MongoId($id));
 
         $name = $input['name'];
         $resourceType->setName($name);
@@ -394,10 +393,10 @@ class MinventarController extends Controller
     private static function extractResourceCriteriaFromRequest(Request $request)
     {
         $id = $request->query->get('id');
-        $mongoId = new \MongoId($id);
+        $mongoId = new MongoId($id);
         $name = $request->query->get('name');
         $type = $request->query->get('type');
-        $mongoType = new \MongoId($type);
+        $mongoType = new MongoId($type);
 
         $criteria = array();
 
@@ -422,7 +421,7 @@ class MinventarController extends Controller
     private function extractResourceTypeCriteriaFromRequest(Request $request)
     {
         $id = $request->query->get('id');
-        $mongoId = new \MongoId($id);
+        $mongoId = new MongoId($id);
         $name = $request->query->get('name');
         $isBundle = $request->query->get('is_bundle');
 

@@ -21,6 +21,8 @@
 namespace AppBundle\Tests\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use MongoClient;
+use MongoId;
 
 /**
  * Used test data:
@@ -184,7 +186,7 @@ class MinventarControllerFunctionalTest extends WebTestCase
 
         $actual = json_decode($client->getResponse()->getContent(), true);
 
-        $mongo = new \MongoClient($client->getContainer()->getParameter('mongo_connection_string'));
+        $mongo = new MongoClient($client->getContainer()->getParameter('mongo_connection_string'));
         $dbName = ($client->getContainer()->getParameter('mongo_database_name'));
         $db = $mongo->$dbName;
         $resourceColl = $db->selectCollection("resource");
@@ -210,7 +212,7 @@ class MinventarControllerFunctionalTest extends WebTestCase
 
         $actual = json_decode($client->getResponse()->getContent(), true);
 
-        $mongo = new \MongoClient($client->getContainer()->getParameter('mongo_connection_string'));
+        $mongo = new MongoClient($client->getContainer()->getParameter('mongo_connection_string'));
         $dbName = ($client->getContainer()->getParameter('mongo_database_name'));
         $db = $mongo->$dbName;
         $resourceTypeColl = $db->selectCollection("resource_type");
@@ -289,7 +291,7 @@ class MinventarControllerFunctionalTest extends WebTestCase
     private function setUpTestData()
     {
         $client = static::createClient();
-        $mongo = new \MongoClient($client->getContainer()->getParameter('mongo_connection_string'));
+        $mongo = new MongoClient($client->getContainer()->getParameter('mongo_connection_string'));
         $dbName = ($client->getContainer()->getParameter('mongo_database_name'));
         $db = $mongo->$dbName;
 
@@ -298,11 +300,11 @@ class MinventarControllerFunctionalTest extends WebTestCase
         $resourceColl = $db->createCollection("resource");
         $resourceTypeColl = $db->createCollection("resource_type");
 
-        $resourceTypeColl->insert(array('_id' => new \MongoId('55cb0842a0416ebac6ac6797'), 'name' => 'TestType', 'is_bundle' => false, 'attributes' => array(array('name' => 'color', 'type' => 'String'))));
-        $resourceTypeColl->insert(array('_id' => new \MongoId('55cca32d981caca5c68377d6'), 'name' => 'TestBundleType', 'is_bundle' => true, 'attributes' => array(array('name' => 'size', 'type' => 'String'))));
+        $resourceTypeColl->insert(array('_id' => new MongoId('55cb0842a0416ebac6ac6797'), 'name' => 'TestType', 'is_bundle' => false, 'attributes' => array(array('name' => 'color', 'type' => 'String'))));
+        $resourceTypeColl->insert(array('_id' => new MongoId('55cca32d981caca5c68377d6'), 'name' => 'TestBundleType', 'is_bundle' => true, 'attributes' => array(array('name' => 'size', 'type' => 'String'))));
 
-        $resourceColl->insert(array('_id' => new \MongoId('55cb097da0416ebac6ac6798'), 'name' => 'Test', 'type' => new \MongoId('55cb0842a0416ebac6ac6797'), 'attributes' => array(array('name' => 'color', 'value' => 'orange'))));
-        $resourceColl->insert(array('_id' => new \MongoId('55cca3af981caca5c68377d7'), 'name' => 'TestBundle', 'type' => new \MongoId('55cca32d981caca5c68377d6'), 'attributes' => array(array('name' => 'size', 'value' => 'medium')), 'resources' => array(new \MongoId('55cb097da0416ebac6ac6798'))));
+        $resourceColl->insert(array('_id' => new MongoId('55cb097da0416ebac6ac6798'), 'name' => 'Test', 'type' => new MongoId('55cb0842a0416ebac6ac6797'), 'attributes' => array(array('name' => 'color', 'value' => 'orange'))));
+        $resourceColl->insert(array('_id' => new MongoId('55cca3af981caca5c68377d7'), 'name' => 'TestBundle', 'type' => new MongoId('55cca32d981caca5c68377d6'), 'attributes' => array(array('name' => 'size', 'value' => 'medium')), 'resources' => array(new MongoId('55cb097da0416ebac6ac6798'))));
     }
 
     private function  cleanUpTestData($db)

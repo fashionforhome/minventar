@@ -5,12 +5,12 @@ Minventar is a minimalistic in-browser inventory management solution. It is mean
 
 <br>![][4]<br>
 
-You manage your resources by defining your own resource types. 
-Resources can be bundles meaning that they can contain any number of resources.
+*You manage your resources by defining your own resource types.* 
+*Resources can be bundles meaning that they can contain any number of resources.*
 
 <br>![][5]<br>
 
-Your resources are displayed hierarchically. <br><br>
+*Your resources are displayed hierarchically.* <br><br>
 
 Minventar uses a MongoDB to store your data. For more information see [Database Schema][3]. <br>
 

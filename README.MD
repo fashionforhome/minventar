@@ -12,6 +12,8 @@ Minventar is a minimalistic in-browser inventory management solution. It is mean
 
 *Your resources are displayed hierarchically.* <br><br>
 
+###Further reading
+
 Minventar uses a MongoDB to store your data. For more information see [Database Schema][3]. <br>
 
 See [Getting started][1] for a guide on how to setup/develop Minventar. <br>

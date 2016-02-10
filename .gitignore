@@ -39,8 +39,10 @@
 # Composer PHAR
 /composer.phar
 
-/bin/
 /app/Resources/mongocache/*
 /web/node_modules/
 /components/
 /.idea/
+
+# ignore all .vagrant directories
+.vagrant/
